@@ -1,9 +1,9 @@
 import { PUBLIC_SCRT_CHAIN_ID, PUBLIC_SCRT_ENDPOINT } from "$env/static/public";
 import { SecretNetworkClient } from "secretjs";
+import { connectWallet } from "./connector";
 import { writable } from "svelte/store";
+
 import type { Window as KeplrWindow } from "@keplr-wallet/types";
-import { WalletType } from "../interfaces/wallets";
-import type { WalletConnector } from "../interfaces/functions";
 
 
 declare global {
@@ -13,6 +13,7 @@ declare global {
 export const secretClient = writable<SecretNetworkClient>();
 export const secretClientSignable = writable<boolean>(false);
 export const secretAddress = writable<string>('');
+
 
 
 export const initSecretClient = async () => {
@@ -50,38 +51,13 @@ export const initSecretClientSignable = async () => {
 
 
 
+// for convinience in non .svelte files
+let secretClientValue : SecretNetworkClient | undefined;
+let secretClientSignableValue : boolean | undefined;
 
-export const detectWallet = async () : Promise<WalletType | undefined>  => {
-    return WalletType.Keplr
-}
-
-
-
-export const connectWallet : WalletConnector = async (wallet? : WalletType) => {
-    
-    wallet ??= await detectWallet()
-
-    let connected = false;
-
-    if (wallet === WalletType.Keplr) {
-        connected =  await connectKeplr();
-    }
-
-    if (!connected) {
-        localStorage.removeItem("connected");
-    }
-
-    return connected;
-}
+secretClient.subscribe(value => secretClientValue = value);
+secretClientSignable.subscribe(value => secretClientSignableValue = value);
 
 
-export const connectKeplr : WalletConnector = async () => {
-
-    try {
-        await window.keplr!.enable(PUBLIC_SCRT_CHAIN_ID);
-        return true;
-      } catch (e : any) {
-        console.error(e.message)
-        return false;
-      }
-}
+export const getSecretClient = () => secretClientValue;
+export const getSecretClientSignable = () => secretClientSignableValue;
