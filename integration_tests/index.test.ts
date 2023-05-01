@@ -36,6 +36,8 @@ const loadContracts = async () => {
     for (const file of files) {
 
         const name = file.split(".")[0];
+        
+        if (!(name in config.contracts)) config.contracts[name] = {};
 
         if (!config.contracts[name]?.codeId) {
             const wasm = readFileSync(`${WASM_PATH}/${file}`) as Uint8Array;
