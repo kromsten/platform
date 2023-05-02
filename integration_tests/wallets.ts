@@ -18,15 +18,13 @@ const accounts: Account[] = new Array<Account>(3);
 
 for (let i = 0; i < mnemonics.length; i++) {
     const mnemonic = mnemonics[i];
-    const wallet = new Wallet(mnemonic, {
-        
-    });
+    const wallet = new Wallet(mnemonic);
     accounts[i] = {
         address: wallet.address,
         mnemonic: mnemonic,
         wallet,
         secretjs: new SecretNetworkClient({
-            url: "http://localhost:9091",
+            url: "http://localhost:1317",
             wallet: wallet,
             walletAddress: wallet.address,
             chainId: "secretdev-1",

@@ -2,8 +2,10 @@ import { readFileSync, readdirSync, writeFileSync } from "fs";
 import { sha256 } from "@noble/hashes/sha256";
 import { toHex, MsgStoreCode, TxResultCode, MsgInstantiateContractResponse } from "secretjs";
 import importedConfig from "./assets/config.json";
-import { Account, getAccount } from "./wallets.js";
-import { expect } from "bun:test";
+import { Account, getAccount } from "./wallets";
+//import { expect } from "bun:test";
+import {expect, test, describe} from '@jest/globals';
+
 
 
 
@@ -22,8 +24,10 @@ type Config = {
 
 const ASSET_PATH = "./assets";
 const WASM_PATH = `${ASSET_PATH}/wasm`;
-const config = importedConfig as Config;
 
+const config : Config = JSON.parse(readFileSync(`${ASSET_PATH}/config.json`, "utf8"));
+
+console.log("config: ", config)
 
 const mainAccount : Account =  getAccount();
 const client = mainAccount.secretjs;
@@ -32,14 +36,16 @@ const loadContracts = async () => {
 
     const files = readdirSync(WASM_PATH);
 
-
     for (const file of files) {
 
         const name = file.split(".")[0];
+
+        console.log("Processing contract: ", name)
         
         if (!(name in config.contracts)) config.contracts[name] = {};
 
         if (!config.contracts[name]?.codeId) {
+
             const wasm = readFileSync(`${WASM_PATH}/${file}`) as Uint8Array;
             const codeHash = toHex(sha256(wasm));
             
@@ -63,6 +69,8 @@ const loadContracts = async () => {
             config.contracts[name].codeHash = codeHash;
         }
 
+        writeFileSync(`${ASSET_PATH}/config.json`, JSON.stringify(config, null, 2));    
+
 
         if (!config.contracts[name]?.address) {
 
@@ -73,11 +81,11 @@ const loadContracts = async () => {
                   sender: mainAccount.address,
                   code_id: codeId!,
                   code_hash: codeHash!,
-                  init_msg: {},
+                  init_msg: { count: 1},
                   label: `${name}-${Date.now()}`,
                 },
                 { gasLimit: 300_000 }
-              );
+            );
 
             expect(tx.code).toBe(TxResultCode.Success);
             const address = MsgInstantiateContractResponse.decode(tx.data[0]).address;
@@ -87,13 +95,28 @@ const loadContracts = async () => {
         writeFileSync(`${ASSET_PATH}/config.json`, JSON.stringify(config, null, 2));
     }
 
+
+
+    console.log("processed contracts: ", config.contracts)
+
 }
 
 
 const init = async () => {
+    console.log("init")
     await loadContracts();
 }
 
 
+
 console.log("Starting integration tests...");
-await init();
+
+
+describe('Init', () => {
+
+    test('Init contracts', async () => {
+        const res = await init();
+    });
+});
+
+
