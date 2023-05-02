@@ -1,0 +1,1 @@
+f8dc488a6492ce8b3dff0b183b2b11fb6d6b1354fe5bbf034e4978226da6260e  ./target/wasm32-unknown-unknown/release/secret_contract_example.wasm
