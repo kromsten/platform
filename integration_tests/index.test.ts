@@ -4,7 +4,7 @@ import { toHex, MsgStoreCode, TxResultCode, MsgInstantiateContractResponse } fro
 import importedConfig from "./assets/config.json";
 import { Account, getAccount } from "./wallets";
 //import { expect } from "bun:test";
-import {expect, test, describe} from '@jest/globals';
+import {expect, test, describe, it} from '@jest/globals';
 
 
 
@@ -27,20 +27,14 @@ const WASM_PATH = `${ASSET_PATH}/wasm`;
 
 const config : Config = JSON.parse(readFileSync(`${ASSET_PATH}/config.json`, "utf8"));
 
-console.log("config: ", config)
 
 const mainAccount : Account =  getAccount();
 const client = mainAccount.secretjs;
 
 const loadContracts = async () => {
-
     const files = readdirSync(WASM_PATH);
-
     for (const file of files) {
-
         const name = file.split(".")[0];
-
-        console.log("Processing contract: ", name)
         
         if (!(name in config.contracts)) config.contracts[name] = {};
 
@@ -69,8 +63,9 @@ const loadContracts = async () => {
             config.contracts[name].codeHash = codeHash;
         }
 
-        writeFileSync(`${ASSET_PATH}/config.json`, JSON.stringify(config, null, 2));    
+        expect(config.contracts[name].codeId).toBeDefined();
 
+        writeFileSync(`${ASSET_PATH}/config.json`, JSON.stringify(config, null, 2));    
 
         if (!config.contracts[name]?.address) {
 
@@ -92,31 +87,36 @@ const loadContracts = async () => {
             config.contracts[name].address = address;
         }
 
+        expect(config.contracts[name].address).toBeDefined();
+
         writeFileSync(`${ASSET_PATH}/config.json`, JSON.stringify(config, null, 2));
     }
-
-
-
-    console.log("processed contracts: ", config.contracts)
 
 }
 
 
 const init = async () => {
-    console.log("init")
     await loadContracts();
 }
 
 
 
-console.log("Starting integration tests...");
-
 
 describe('Init', () => {
-
-    test('Init contracts', async () => {
+    test('All contract are deployed and instantiated', async () => {
         const res = await init();
+        expect(Object.keys(config.contracts).length)
+            .toBeGreaterThanOrEqual(readdirSync(WASM_PATH).length);
     });
 });
 
+
+describe.each(Object.entries(config.contracts)) 
+    ('Contract configuration', (name : string, config : ContractConfig) => {
+        it(name + ".wasm have codeId and address", () => {
+            expect(config.codeId).toBeDefined();
+            expect(config.address).toBeDefined();
+        })
+    }
+);
 
