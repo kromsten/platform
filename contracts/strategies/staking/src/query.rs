@@ -37,14 +37,10 @@ pub fn claim_params() -> StdResult<InvestParamsResult> {
 }
 
 
-pub fn rewards(_deps: Deps, _token : Token) -> StdResult<RewardResponse> {
+pub fn not_implemented() -> StdResult<RewardResponse> {
     Err(cosmwasm_std::StdError::GenericErr { msg: "Not implemented".to_string() })
 }
 
-
-pub fn all_rewards(_deps: Deps) -> StdResult<RewardsResponse> {
-    Err(cosmwasm_std::StdError::GenericErr { msg: "Not implemented".to_string() })
-}
 
 
 pub fn rewards_query(_deps: Deps) -> StdResult<RewardsQueryResponse> {

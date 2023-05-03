@@ -36,6 +36,21 @@ pub enum ExecuteMsg {
         validator_address: Option<String>, 
         delegator_address: Option<String>
     },
+
+    ActivateReinvest {
+        validator_address: Option<String>, 
+        delegator_address: Option<String>
+    },
+
+    DeactivateReinvest {
+        validator_address: Option<String>, 
+        delegator_address: Option<String>
+    },
+
+    ChangeConfig {
+        admin: Option<Addr>,
+        default_validator: Option<Addr>,
+    }
 }
 
 
@@ -59,6 +74,10 @@ pub enum QueryMsg {
     
     InvestTokens {},
     RewardTokens {},
+
+    WithPermit {
+        query: QueryRequest<Empty>,
+    }
 }
 
 
@@ -119,6 +138,13 @@ pub struct DelegateMsg {
 pub struct ClaimMsg {
     pub delegator_address: String,
     pub validator_address: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
+pub struct AutoStakeMsg {
+    pub delegator_address: String,
+    pub validator_address: String,
+    pub enabled: bool
 }
 
 

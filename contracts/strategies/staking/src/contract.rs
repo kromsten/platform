@@ -3,7 +3,7 @@ use cosmwasm_std::{
     entry_point, to_binary
 };
 
-use crate::execute::{try_invest, try_withdraw, try_claim};
+use crate::execute::{try_invest, try_withdraw, try_claim, try_change_config, try_auto_reinvest};
 use crate::msg::{
     ExecuteMsg, 
     InstantiateMsg, 
@@ -18,9 +18,7 @@ use crate::query::{
     withdraw_messages, 
     claim_messages, 
     rewards_query,
-    all_rewards, 
-    rewards, 
-    tokens, 
+    tokens, not_implemented, 
 };
 
 use crate::state::{config, Config};
@@ -39,6 +37,9 @@ pub fn instantiate(
     let state = Config {
         admin: deps.api.addr_canonicalize(&msg.admin.unwrap_or(info.sender.clone()).to_string())?,
         default_validator: deps.api.addr_canonicalize(&msg.default_validator.into_string())?,
+        can_query_rewards: false,
+        native_reinvest: true,
+        private_queries: false,
     };
 
     deps.api
@@ -68,7 +69,22 @@ pub fn execute(deps: DepsMut, _env: Env, info: MessageInfo, msg: ExecuteMsg) -> 
         ExecuteMsg::Claim { 
             validator_address, 
             delegator_address 
-        } => try_claim(deps, info, validator_address, delegator_address)
+        } => try_claim(deps, info, validator_address, delegator_address),
+
+        ExecuteMsg::ActivateReinvest { 
+            validator_address, 
+            delegator_address 
+        } => try_auto_reinvest(deps, info, validator_address, delegator_address, true),
+
+        ExecuteMsg::DeactivateReinvest { 
+            validator_address, 
+            delegator_address 
+        } => try_auto_reinvest(deps, info, validator_address, delegator_address, false),
+
+        ExecuteMsg::ChangeConfig { 
+            admin, 
+            default_validator 
+        } => try_change_config(deps, info, admin, default_validator),
     }
 }
 
@@ -77,16 +93,14 @@ pub fn execute(deps: DepsMut, _env: Env, info: MessageInfo, msg: ExecuteMsg) -> 
 #[entry_point]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
-        QueryMsg::TestQuery { request } => 
-            to_binary(&test_query(deps, request)?),
+        QueryMsg::TestQuery { request } => to_binary(&test_query(deps, request)?),
         
         QueryMsg::InvestParams {} =>  to_binary(&invest_params()?),
         QueryMsg::WithdrawParams {} =>  to_binary(&withdraw_params()?),
         QueryMsg::ClaimParams {} =>  to_binary(&claim_params()?),
 
-
-        QueryMsg::AllRewards {} => to_binary(&all_rewards(deps)?),
-        QueryMsg::Rewards { token } => to_binary(&rewards(deps, token)?),
+        QueryMsg::AllRewards {} => to_binary(&not_implemented()?),
+        QueryMsg::Rewards { token: _ } => to_binary(&not_implemented()?),
         QueryMsg::RewardsQuery {} => to_binary(&rewards_query(deps)?),
         
         QueryMsg::InvestMsgs {} => to_binary(&invest_messages()?),
@@ -95,6 +109,8 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
 
         QueryMsg::InvestTokens {} => to_binary(&tokens()?),
         QueryMsg::RewardTokens {} => to_binary(&tokens()?),
+
+        QueryMsg::WithPermit { query: _ } => to_binary(&not_implemented()?),
     }
 }
 
