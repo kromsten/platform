@@ -1,9 +1,9 @@
 {
   "contracts": {
-    "staking": {
-      "codeId": 3,
-      "codeHash": "c6c7142f43e906289e8b5a916e44c3138d487035ea3ecf90bd3b4a646ce2aa29",
-      "address": "secret18eezxhys9jwku67cm4w84xhnzt4xjj772twz9k"
+    "staking_strategy": {
+      "codeId": 14,
+      "codeHash": "e15dfd498bc083a292d94c6a23c629ea50cf2bcc3832db1ebf0b1666897cc14a",
+      "address": "secret18hqp4vw27zvuk5uxcezdw7jz9cgd96lw2jxhj0"
     }
   }
 }
