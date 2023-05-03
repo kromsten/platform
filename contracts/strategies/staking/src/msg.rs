@@ -3,17 +3,12 @@ use schemars::JsonSchema;
 use secret_toolkit::utils::types::Token;
 use serde::{Deserialize, Serialize};
 
-/* 
-pub const banka : QueryRequest<Empty> = QueryRequest::Bank( {
-    cosmwasm_std::BankQuery::Balance { address: (), denom: () }
-}) */
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
 pub struct InstantiateMsg {
     pub admin: Option<Addr>,
     pub default_validator: Addr,
 }
-
 
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
@@ -82,8 +77,6 @@ pub enum QueryMsg {
 
 
 
-
-
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
 pub struct ValueQuerier {
     pub path: String,
@@ -125,8 +118,6 @@ pub struct QueryBuilder {
 }
 
 
-
-
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
 pub struct DelegateMsg {
     pub delegator_address: String,
@@ -148,8 +139,6 @@ pub struct AutoStakeMsg {
 }
 
 
-
-
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
 pub struct InvestmentMsg {
     pub chain_id: String,
@@ -157,7 +146,6 @@ pub struct InvestmentMsg {
     pub attributes: Vec<Attribute>,
     pub exposes_investor: bool
 }
-
 
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]

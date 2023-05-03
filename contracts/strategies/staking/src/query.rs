@@ -2,7 +2,7 @@ use cosmwasm_std::{StdResult, Deps, Addr};
 use secret_toolkit::utils::types::Token;
 
 use crate::{
-    msg::{InvestParamsResult, InvestmentMsg, RewardResponse, RewardsResponse, RewardsQueryResponse, RequestBuilder}, 
+    msg::{InvestParamsResult, InvestmentMsg, RewardResponse, RewardsQueryResponse, RequestBuilder}, 
     attributes::{invest_attributes, claim_attributes, delegator_attribute, validator_attribute}, 
     investments::{invest_msg, withdraw_msg, claim_msg}
 };
