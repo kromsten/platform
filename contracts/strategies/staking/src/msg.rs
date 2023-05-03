@@ -52,16 +52,17 @@ pub enum ExecuteMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
-    TestQuery { request: QueryRequest<Empty> },
 
     InvestParams {},
     WithdrawParams {},
     ClaimParams {},
 
+    AprQuery {},
     RewardsQuery {},
     
     AllRewards { },
     Rewards { token: Token },
+    Apr {},
 
     InvestMsgs {},
     WithdrawMsgs { address: Option<Addr> },
@@ -93,6 +94,16 @@ pub enum AttributeValue {
     Investor {},
     Contract {},
     Amount {},
+    ViewingKey {},
+    
+    String {
+        value: String
+    },
+
+    Number {
+        value: Uint128
+    },
+
     Custom {
         value_type: String,
         value: Binary
@@ -140,11 +151,56 @@ pub struct AutoStakeMsg {
 
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
-pub struct InvestmentMsg {
+pub struct Reward {
+    token: Token,
+    amount: Uint128
+}
+
+pub type IssuedToken = Reward;
+
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum ActionClass {
+    CreateViewingKey {},
+    SwapToken { from: Token, to: Token },
+    Allowance { token: Token, amount: Uint128 },
+    Mint { token: Token, amount: Uint128 },
+    Transfer {},
+    Staking {},
+    Claiming {},
+    Unknown {}
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum ActionRequrement {
+    ViewingPermission {},
+    Allowance { token: Token, amount: Uint128 },
+    Authz { /* type_url: String, mesaage_builder: MessageBuilder */ },
+    AdminRight {},
+    Whitelist {},
+}
+
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
+pub struct InvestmentAction {
     pub chain_id: String,
     pub type_url: String,
     pub attributes: Vec<Attribute>,
-    pub exposes_investor: bool
+    pub exposes_investor: bool,
+    pub issued_tokens: Option<Vec<IssuedToken>>,
+    pub optional: bool,
+    pub description: Option<String>,
+    pub class: ActionClass,
+    pub action_requirements: Option<Vec<ActionRequrement>>,
+    pub independent_action_requirements: Option<Vec<ActionRequrement>>
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
+pub struct MessageBuilder {
+    pub name: String,
+    pub attributes: Vec<Attribute>
 }
 
 
@@ -155,13 +211,6 @@ pub struct RequestBuilder {
 }
 
 pub type InvestParamsResult = RequestBuilder;
-
-
-#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
-pub struct Reward {
-    token: Token,
-    amount: Uint128
-}
 
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]

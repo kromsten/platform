@@ -93,14 +93,15 @@ pub fn execute(deps: DepsMut, _env: Env, info: MessageInfo, msg: ExecuteMsg) -> 
 #[entry_point]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
-        QueryMsg::TestQuery { request } => to_binary(&test_query(deps, request)?),
-        
         QueryMsg::InvestParams {} =>  to_binary(&invest_params()?),
         QueryMsg::WithdrawParams {} =>  to_binary(&withdraw_params()?),
         QueryMsg::ClaimParams {} =>  to_binary(&claim_params()?),
 
         QueryMsg::AllRewards {} => to_binary(&not_implemented()?),
         QueryMsg::Rewards { token: _ } => to_binary(&not_implemented()?),
+        QueryMsg::Apr {} => to_binary(&not_implemented()?),
+        
+        QueryMsg::AprQuery {  } => to_binary(&not_implemented()?),
         QueryMsg::RewardsQuery {} => to_binary(&rewards_query(deps)?),
         
         QueryMsg::InvestMsgs {} => to_binary(&invest_messages()?),

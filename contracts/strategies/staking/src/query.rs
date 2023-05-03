@@ -2,7 +2,7 @@ use cosmwasm_std::{StdResult, Deps, Addr};
 use secret_toolkit::utils::types::Token;
 
 use crate::{
-    msg::{InvestParamsResult, InvestmentMsg, RewardResponse, RewardsQueryResponse, RequestBuilder}, 
+    msg::{InvestParamsResult, InvestmentAction, RewardResponse, RewardsQueryResponse, RequestBuilder}, 
     attributes::{invest_attributes, claim_attributes, delegator_attribute, validator_attribute}, 
     investments::{invest_msg, withdraw_msg, claim_msg}
 };
@@ -36,7 +36,6 @@ pub fn claim_params() -> StdResult<InvestParamsResult> {
     })
 }
 
-
 pub fn not_implemented() -> StdResult<RewardResponse> {
     Err(cosmwasm_std::StdError::GenericErr { msg: "Not implemented".to_string() })
 }
@@ -59,13 +58,13 @@ pub fn rewards_query(_deps: Deps) -> StdResult<RewardsQueryResponse> {
 
 
 
-pub fn invest_messages() -> StdResult<Vec<InvestmentMsg>> {
+pub fn invest_messages() -> StdResult<Vec<InvestmentAction>> {
     Ok(vec![invest_msg()])
 }
 
 
-pub fn withdraw_messages(deps: Deps, address : Option<Addr>) -> StdResult<Vec<InvestmentMsg>> {
-    let msgs: Vec<InvestmentMsg> = if address.is_none() {
+pub fn withdraw_messages(deps: Deps, address : Option<Addr>) -> StdResult<Vec<InvestmentAction>> {
+    let msgs: Vec<InvestmentAction> = if address.is_none() {
         vec![withdraw_msg(None)]
     } else {
         let delegations = deps.querier.query_all_delegations(address.unwrap().to_string()).unwrap();
@@ -82,8 +81,8 @@ pub fn withdraw_messages(deps: Deps, address : Option<Addr>) -> StdResult<Vec<In
 }
 
 
-pub fn claim_messages(deps: Deps, address : Option<Addr>) -> StdResult<Vec<InvestmentMsg>> {
-    let msgs: Vec<InvestmentMsg> = if address.is_none() {
+pub fn claim_messages(deps: Deps, address : Option<Addr>) -> StdResult<Vec<InvestmentAction>> {
+    let msgs: Vec<InvestmentAction> = if address.is_none() {
         vec![claim_msg(None)]
     } else {
         let delegations = deps.querier.query_all_delegations(address.unwrap().to_string()).unwrap();
