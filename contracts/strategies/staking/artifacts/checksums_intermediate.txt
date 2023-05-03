@@ -1,1 +1,2 @@
 f8dc488a6492ce8b3dff0b183b2b11fb6d6b1354fe5bbf034e4978226da6260e  ./target/wasm32-unknown-unknown/release/secret_contract_example.wasm
+e751d3a51a3997bba7be2fe42a6ea0d9bff07ebb4558b01b169cb1774833e2b2  ./target/wasm32-unknown-unknown/release/staking_strategy.wasm

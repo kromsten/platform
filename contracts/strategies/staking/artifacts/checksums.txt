@@ -1,1 +1,2 @@
 f56f7025f733a7362ac2e8d75aa79dcf09b7d11a291829293b66ad627ae2fd45  secret_contract_example.wasm
+56f2fa668c6abe711fe905fb0fdc35ffed5370dc8656c89c58604b361fc3b886  staking_strategy.wasm
