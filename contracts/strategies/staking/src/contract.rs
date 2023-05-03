@@ -36,7 +36,7 @@ pub fn instantiate(
     
     let state = Config {
         admin: deps.api.addr_canonicalize(&msg.admin.unwrap_or(info.sender.clone()).to_string())?,
-        default_validator: deps.api.addr_canonicalize(&msg.default_validator.into_string())?,
+        default_validator: msg.default_validator,
         can_query_rewards: false,
         native_reinvest: true,
         private_queries: false,

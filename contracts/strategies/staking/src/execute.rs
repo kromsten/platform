@@ -200,7 +200,7 @@ pub fn try_change_config(
     }
 
     if new_default_validator.is_some() {
-        state.default_validator = deps.api.addr_canonicalize(&new_default_validator.clone().unwrap().to_string())?;
+        state.default_validator = new_default_validator.clone().unwrap();
         attributes.push(("action", "change_default_validator".to_string()));
         attributes.push(("new_default_validator", new_default_validator.unwrap().to_string()));
     }

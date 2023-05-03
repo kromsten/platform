@@ -1,7 +1,7 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use cosmwasm_std::{Storage, CanonicalAddr};
+use cosmwasm_std::{Storage, CanonicalAddr, Addr};
 use cosmwasm_storage::{singleton, singleton_read, ReadonlySingleton, Singleton};
 
 pub static CONFIG_KEY: &[u8] = b"config";
@@ -10,7 +10,7 @@ pub static CONFIG_KEY: &[u8] = b"config";
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
 pub struct Config {
     pub admin: CanonicalAddr,
-    pub default_validator: CanonicalAddr,
+    pub default_validator: Addr,
     pub native_reinvest: bool,
     pub can_query_rewards: bool,
     pub private_queries: bool,
