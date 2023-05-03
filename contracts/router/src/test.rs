@@ -26,6 +26,7 @@ mod tests {
         instantiate(deps.as_mut(), mock_env(), info, init_msg)
     }
 
+
     #[test]
     fn can_instantiate() {
         let res: Result<Response, StdError> = default_init();
