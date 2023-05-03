@@ -4,7 +4,7 @@ mod tests {
     use crate::msg::{InstantiateMsg, ExecuteMsg, QueryMsg};
     use crate::state::Strategy;
 
-    use cosmwasm_std::{testing::*, MessageInfo, Response, StdResult, StdError, Addr};
+    use cosmwasm_std::{testing::*, MessageInfo, Response, StdResult, StdError, Addr, OwnedDeps, DepsMut};
     use cosmwasm_std::{from_binary, Coin, Uint128};
 
 
@@ -18,28 +18,26 @@ mod tests {
         )
     }
 
-    pub fn default_init() -> StdResult<Response> {
-        let mut deps = mock_dependencies();
-        let info: MessageInfo = default_info();
+    pub fn default_init(deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
         let init_msg = InstantiateMsg { admin: None };
-        // we can just call .unwrap() to assert this was a success
-        instantiate(deps.as_mut(), mock_env(), info, init_msg)
+        instantiate(deps, mock_env(), info, init_msg)
     }
 
 
     #[test]
     fn can_instantiate() {
-        let res: Result<Response, StdError> = default_init();
+        let mut deps = mock_dependencies();
+        let res: Result<Response, StdError> = default_init(deps.as_mut(), default_info());
         assert!(res.is_ok());
         assert_eq!(0, res.unwrap().messages.len());
     }
 
     #[test]
     fn can_add_strategies() {
-        default_init().unwrap();
-        
         let mut deps = mock_dependencies();
+        default_init(deps.as_mut(), default_info()).unwrap();
         
+      
         let msg = ExecuteMsg::AddRoute { address: Addr::unchecked("sscrt") };
         let res = execute(deps.as_mut(), mock_env(), default_info(), msg);
         assert!(res.is_ok());
