@@ -1,7 +1,11 @@
-use cosmwasm_std::{CosmosMsg, Addr, Binary, QueryRequest};
+use cosmwasm_std::{CosmosMsg, Addr, Binary, QueryRequest, Empty};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use cw20::{Balance, Cw20CoinVerified};
+
+/* 
+pub const banka : QueryRequest<Empty> = QueryRequest::Bank( {
+    cosmwasm_std::BankQuery::Balance { address: (), denom: () }
+}) */
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
 pub struct InstantiateMsg {
@@ -13,11 +17,13 @@ pub struct InstantiateMsg {
 pub enum ExecuteMsg {
     Increment {},
     Reset { count: i32 },
+    DefineRoute {}
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
+    TestQuery { request: QueryRequest<Empty> },
 }
 
 // We define a custom struct for each query response
@@ -35,20 +41,16 @@ pub struct InvestmentRewards {
 
 
 
-
-#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
-pub struct CustomQuery {
-    raw: Binary,
-}
-
-
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
 pub struct ValueQuerier {
-    pub msg: QueryRequest<CustomQuery>,
+    pub msg: QueryRequest<Empty>,
     pub group: u8,
     pub jq_parser: String,
 
 }
+
+
+/* #[non_exhaustive] */
 
 
 
@@ -74,6 +76,15 @@ pub struct Attribute {
 
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
+pub struct QueryBuilder {
+    pub key: String,
+    pub value: Option<AttributeValue>,
+    pub querier: Option<ValueQuerier>
+}
+
+
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
 pub struct MessageBuilder {
     pub type_url: String,
     pub attributes: Vec<Attribute>
@@ -85,5 +96,21 @@ pub struct MessageBuilder {
 pub struct InvestmentMsg {
     msg: Option<CosmosMsg>,
     builder: Option<MessageBuilder>,
+}
+
+
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum RewardToken {
+    Contract { address : Addr },
+    Native { denom : String },
+    None {}
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
+pub struct Strategy {
+    investment_msg: InvestmentMsg,
+    reward_token: RewardToken,
 }
 

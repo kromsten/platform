@@ -1,5 +1,5 @@
 use cosmwasm_std::{
-    entry_point, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult, CosmosMsg, CustomMsg,
+    entry_point, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult, CosmosMsg, CustomMsg, QueryRequest, Empty, QuerierResult, BalanceResponse, from_binary,
 };
 
 use crate::msg::{CountResponse, ExecuteMsg, InstantiateMsg, QueryMsg};
@@ -11,12 +11,11 @@ pub fn instantiate(
     deps: DepsMut,
     _env: Env,
     info: MessageInfo,
-    msg: InstantiateMsg,
+    _msg: InstantiateMsg,
 ) -> StdResult<Response> {
     let state = State {
         owner: info.sender.clone(),
     };
-
 
     // CustomMsg {}
 
@@ -32,6 +31,7 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> S
     match msg {
         ExecuteMsg::Increment {} => try_increment(deps, env),
         ExecuteMsg::Reset { count } => try_reset(deps, info, count),
+        ExecuteMsg::DefineRoute {  } => try_increment(deps, env)
     }
 }
 
@@ -57,7 +57,30 @@ pub fn try_reset(deps: DepsMut, info: MessageInfo, count: i32) -> StdResult<Resp
 #[entry_point]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
+        QueryMsg::TestQuery { request } => 
+            to_binary(&test_query(deps, request)?),
     }
+}
+
+
+pub fn test_query(
+    deps: Deps,
+    request: QueryRequest<Empty>,
+) -> StdResult<bool> {
+
+    let querier = deps.querier;
+
+    
+    let res : BalanceResponse = querier.query(&request).unwrap();
+    
+    /* 
+    let bin = to_binary(&request).unwrap();
+    let res = querier.raw_query(bin.as_slice()).unwrap();
+    let res: BalanceResponse = from_binary(&res.unwrap()).unwrap(); */
+
+    deps.api.debug(&format!("query res: {:?}", res));
+
+    Ok(true)
 }
 
 
@@ -84,15 +107,15 @@ mod tests {
         let res = instantiate(deps.as_mut(), mock_env(), info, init_msg).unwrap();
 
         assert_eq!(0, res.messages.len());
-
     }
 
     #[test]
-    fn increment() {
+    fn queryStuff() {
         let mut deps = mock_dependencies_with_balance(&[Coin {
             denom: "token".to_string(),
             amount: Uint128::new(2),
         }]);
+
         let info = mock_info(
             "creator",
             &[Coin {
@@ -113,8 +136,29 @@ mod tests {
             }],
         );
 
-        let exec_msg = ExecuteMsg::Increment {};
-        let _res = execute(deps.as_mut(), mock_env(), info, exec_msg).unwrap();
+
+        /* let request = QueryRequest::Bank({
+            cosmwasm_std::BankQuery::Balance { 
+                address: "token".to_string(), 
+                denom: String::new() 
+            }
+
+        }); */
+
+        let request = QueryRequest::Stargate { 
+            path: String::from("/cosmos.bank.v1beta1.Query.Balance"), 
+            data: to_binary(&cosmwasm_std::BankQuery::Balance { 
+                address: "token".to_string(), 
+                denom: String::new() 
+            }).unwrap() 
+        };
+        
+
+        let qmsg : QueryMsg = QueryMsg::TestQuery { request };
+
+        let res = query(deps.as_ref(), mock_env(), qmsg);
+
+        assert_eq!(1, 2)
 
 
     }
