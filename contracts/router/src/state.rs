@@ -10,8 +10,6 @@ pub static CONFIG_KEY: &[u8] = b"config";
 
 
 
-
-
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
 pub struct Strategy {}
 

@@ -6,7 +6,7 @@ import { resolve } from 'path';
 export default defineConfig({
 	plugins: [sveltekit(), nodePolyfills({protocolImports: true}) ],
 	test: {
-		include: ['src/**/*.{test,spec}.{js,ts}']
+		include: ['*tests*/*.{test,spec}.{js,ts}']
 	},
 	resolve: {
 		alias: {

@@ -1,7 +1,6 @@
-import { QueryClient, StargateClient } from "@cosmjs/stargate";
+//import { QueryClient, StargateClient } from "@cosmjs/stargate";
 import { SecretNetworkClient, Wallet } from "secretjs";
-import { Account } from "./interfaces";
-import { Tendermint37Client } from "@cosmjs/tendermint-rpc";
+import type { Account } from "./interfaces";
 
 
 const a = "grant rice replace explain federal release fix clever romance raise often wild taxi quarter soccer fiber love must tape steak together observe swap guitar";
@@ -27,10 +26,9 @@ for (let i = 0; i < mnemonics.length; i++) {
         }),
     };
     
-    account.secretjs.tx.distribution.withdrawDelegatorReward
-    Tendermint37Client.connect("http://localhost:26657")
     //StargateClient.connect("http://localhost:26657")
-    .then((client) => account.queryClient = new QueryClient(client));
+    //Tendermint37Client.connect("http://localhost:26657")
+    //.then((client) => account.queryClient = new QueryClient(client));
   
     accounts[i] = account;
 

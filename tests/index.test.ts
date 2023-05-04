@@ -2,23 +2,31 @@ import { readFileSync, readdirSync, writeFileSync } from "fs";
 import { sha256 } from "@noble/hashes/sha256";
 import { toHex, MsgStoreCode, TxResultCode, MsgInstantiateContractResponse, TendermintQuerier, toBase64 } from "secretjs";
 import { getAccount } from "./accounts";
-import {expect, test, describe, it} from '@jest/globals';
-import { Account, Config, ContractConfig, InvestParamsResult } from "./interfaces";
+import { expect, test, describe, it} from 'vitest';
+import type { Account, Config, ContractConfig, InvestParamsResult } from "./interfaces";
 import { constructParams } from "./utils";
 
+import nonTypedconfig from "../assets/config.json";
 
-const ASSET_PATH = "./assets";
+const ASSET_PATH = "assets";
 const WASM_PATH = `${ASSET_PATH}/wasm`;
 
-const config : Config = JSON.parse(readFileSync(`${ASSET_PATH}/config.json`, "utf8"));
+const config : Config = nonTypedconfig as Config //JSON.parse(readFileSync(`${ASSET_PATH}/config.json`, "utf8"));
 if (!config.contracts) config.contracts = {};
 
 const mainAccount : Account =  getAccount();
 const client = mainAccount.secretjs;
 
+import { cwd } from "process";
 
 const loadContracts = async () => {
+
+
+    console.log("cwd:", cwd())
+
     const files = readdirSync(WASM_PATH);
+
+    console.log("files:", files)
 
     const existing = Object.keys(config.contracts).filter((k) => config.contracts[k].codeId && config.contracts[k].address);
 
@@ -31,6 +39,8 @@ const loadContracts = async () => {
         if (!(name in config.contracts)) config.contracts[name] = {};
 
         if (!config.contracts[name]?.codeId) {
+
+            console.log("path:", `${WASM_PATH}/${file}`)
 
             const wasm = readFileSync(`${WASM_PATH}/${file}`) as Uint8Array;
             const codeHash = toHex(sha256(wasm));
@@ -89,7 +99,6 @@ const loadContracts = async () => {
     }
 
 }
-
 
 
 

@@ -1,5 +1,5 @@
-import { type SecretNetworkClient, type Wallet } from "secretjs";
-import { QueryClient} from "@cosmjs/stargate";
+import type { SecretNetworkClient,Wallet } from "secretjs";
+//import type { QueryClient } from "@cosmjs/stargate";
 
 export type ContractConfig = {
     address?: string;
@@ -18,7 +18,7 @@ export type Account = {
     mnemonic: string;
     wallet: Wallet;
     secretjs: SecretNetworkClient;
-    queryClient?: QueryClient;
+    //queryClient?: QueryClient;
 };
 
 

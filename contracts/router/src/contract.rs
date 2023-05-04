@@ -15,7 +15,7 @@ pub fn instantiate(
     info: MessageInfo,
     msg: InstantiateMsg,
 ) -> StdResult<Response> {
-    
+
     let admin = msg.admin.unwrap_or(info.sender);
     ADMIN.save(deps.storage, &admin)?;
     deps.api.debug(format!("Contract was initialized by {}", admin).as_str());
@@ -28,7 +28,6 @@ pub fn execute(deps: DepsMut, _env: Env, info: MessageInfo, msg: ExecuteMsg) -> 
         ExecuteMsg::AddRoute { address } => add_route(deps, info.sender, address)
     }
 }
-
 
 
 #[entry_point]

@@ -1,8 +1,7 @@
-import { fromBase64, Msg, MsgDelegate } from "secretjs";
+import { fromBase64, MsgDelegate, type Msg } from "secretjs";
 import { getAccount } from "./accounts";
-import { Attribute } from "./interfaces";
+import type { Attribute } from "./interfaces";
 import { run } from "node-jq";
-
 
 
 /* const client = new SecretNetworkClient({

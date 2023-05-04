@@ -4,9 +4,8 @@ mod tests {
     use crate::msg::{InstantiateMsg, ExecuteMsg, QueryMsg};
     use crate::state::Strategy;
 
-    use cosmwasm_std::{testing::*, MessageInfo, Response, StdResult, StdError, Addr, OwnedDeps, DepsMut};
+    use cosmwasm_std::{testing::*, MessageInfo, Response, StdResult, StdError, Addr, DepsMut};
     use cosmwasm_std::{from_binary, Coin, Uint128};
-
 
 
     pub fn default_info() -> MessageInfo {
@@ -35,17 +34,25 @@ mod tests {
     #[test]
     fn can_add_strategies() {
         let mut deps = mock_dependencies();
-        default_init(deps.as_mut(), default_info()).unwrap();
-        
-      
+
+        let adming_info = default_info();
+
+        default_init(deps.as_mut(), adming_info.clone()).unwrap();
+
+        let msg = ExecuteMsg::AddRoute { address: Addr::unchecked("sscrt") };
+        let res = execute(deps.as_mut(), mock_env(), mock_info("bob", &vec![]), msg);
+        assert!(res.is_err());
+
+        let res = query(deps.as_ref(), mock_env(), QueryMsg::AllStrategies {}).unwrap();
+        let strategies : Vec<Strategy> = from_binary(&res).unwrap();
+        assert_eq!(0, strategies.len());
+
         let msg = ExecuteMsg::AddRoute { address: Addr::unchecked("sscrt") };
         let res = execute(deps.as_mut(), mock_env(), default_info(), msg);
         assert!(res.is_ok());
 
-        let res = query(deps.as_ref(), mock_env(), QueryMsg::AllStrategies {});
-        assert!(res.is_ok());
-
-        let strategies : Vec<Strategy> = from_binary(&res.unwrap()).unwrap();
+        let res = query(deps.as_ref(), mock_env(), QueryMsg::AllStrategies {}).unwrap();
+        let strategies : Vec<Strategy> = from_binary(&res).unwrap();
         assert_eq!(1, strategies.len());
     }
 

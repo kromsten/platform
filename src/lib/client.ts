@@ -1,6 +1,6 @@
 import { PUBLIC_SCRT_CHAIN_ID, PUBLIC_SCRT_ENDPOINT } from "$env/static/public";
 import { SecretNetworkClient } from "secretjs";
-import { connectWallet } from "./connector";
+import { connectWallet, secretAddress } from "./connector";
 import { writable } from "svelte/store";
 
 import type { Window as KeplrWindow } from "@keplr-wallet/types";
@@ -12,8 +12,6 @@ declare global {
 
 export const secretClient = writable<SecretNetworkClient>();
 export const secretClientSignable = writable<boolean>(false);
-export const secretAddress = writable<string>('');
-
 
 
 export const initSecretClient = async () => {
@@ -21,7 +19,6 @@ export const initSecretClient = async () => {
         chainId: PUBLIC_SCRT_CHAIN_ID,
         url: PUBLIC_SCRT_ENDPOINT
     });
-
     secretClient.set(client);
 }
 
@@ -48,7 +45,6 @@ export const initSecretClientSignable = async () => {
         secretAddress.set(account.address)
     }
 }
-
 
 
 // for convinience in non .svelte files

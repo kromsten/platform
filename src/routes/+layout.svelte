@@ -6,15 +6,18 @@
 	// Most of your app wide CSS should be put in this file
 	import '../app.postcss';
 	import { AppShell, AppBar } from '@skeletonlabs/skeleton';
-	import { initSecretClientSignable, secretAddress } from '$lib/client';
+	import { initSecretClientSignable } from '$lib/client';
 	import { onMount } from 'svelte';
 
 	import { init } from '$lib';
 	import { formatAddress } from '$lib/utils';
+	import { secretAddress } from '$lib/connector';
 
 	onMount(init);
 
 </script>
+
+
 
 <!-- App Shell -->
 <AppShell>
