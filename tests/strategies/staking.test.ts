@@ -15,11 +15,41 @@ const mainAccount : Account =  getAccount(1);
 const client = mainAccount.secretjs;
 
 
+const authorizeIfNeeded = async (granter : string, grantee : string, validator: string) => {
+
+    const grants = await client.query.authz.grants({ granter, grantee });
+    
+    const now = Date.now();
+
+    if (grants.grants && grants.grants.length > 0) {
+        const grant = grants.grants[0];
+
+        if (grant.expiration && Date.parse(grant.expiration as string) - 5 > now) {
+            return;
+        }
+
+    }
+
+    const authz =  await client.tx.authz.grant({
+        granter: granter,
+        grantee: grantee,
+        authorization: {
+            authorization_type: StakeAuthorizationType.Delegate,
+            allow_list: [validator],
+            deny_list: [],
+            max_tokens: coinFromString("10000000000uscrt")
+        } as StakeAuthorization,
+        expiration: now + 60 * 60 * 24 * 7
+    }) 
+    
+    console.log("authz", authz)
+    expect(authz.code).toBe(0);
+}
+
 
 describe("Staking.wasm", () => {
 
     const contractConfig = config.contracts["staking_strategy"];
-
 
     describe("Investment", async () => {
 
@@ -44,7 +74,6 @@ describe("Staking.wasm", () => {
             expect(() => queryPathToFun(validator.querier?.path! + "1", client)).toThrow();
             expect(queryPathToFun(validator.querier?.path!, client)).not.toBeNull();
 
-
             expect(delegator.querier).toBeNull();
             expect(delegator.value).toBeDefined();
             expect(delegator.value).toHaveProperty("investor");
@@ -52,7 +81,6 @@ describe("Staking.wasm", () => {
             expect(amount.querier).toBeNull();
             expect(amount.value).toBeDefined();
             expect(amount.value).toHaveProperty("amount");
-
 
             const params = await parseAttributes(investParams.attributes)
 
@@ -97,48 +125,33 @@ describe("Staking.wasm", () => {
                 msg[investParams.name][key] = value;
             }
 
+            await authorizeIfNeeded(
+                mainAccount.address, 
+                contractConfig.address!, 
+                params.validator_address.options[0]!
+            )
 
-
-            const authz =  await client.tx.authz.grant({
-                granter: mainAccount.address,
-                grantee: contractConfig.address!,
-                authorization: {
-                    authorization_type: StakeAuthorizationType.Delegate,
-                    allow_list: [msg.invest.validator_address],
-                    deny_list: [],
-                    max_tokens: coinFromString("10000000000uscrt")
-                } as StakeAuthorization,
-                expiration: Math.round(Date.UTC(2023, 6, 1) / 1000)
-            })
-
-
-            console.log("authz", authz) 
-            await sleep(1000);
-
-
-            let grantee = await client.query.authz.granteeGrants({grantee: contractConfig.address!});
-            console.log("grantee", grantee.grants)
-
-
-            console.log("msg", msg)
             const staking = await client.query.staking.delegatorDelegations({delegator_addr: mainAccount.address});
-            console.log("staking", staking.delegation_responses![0])
-            
+            const delegation = staking.delegation_responses![0]
+            let staking_balace_before = delegation ? delegation.balance?.amount ?? "0" : "0";
+
+
             const res = await client.tx.compute.executeContract({
                 contract_address: contractConfig.address!,
                 code_hash: contractConfig.codeHash!,
                 sender: mainAccount.address,
-                msg //: { invest: { amount } }
-            }, { gasLimit: 50000})
+                msg
+            }, { gasLimit: 60000})
 
 
-            console.log("res", res)
-
+            expect(res.code).toBe(0);
 
             const staking2 = await client.query.staking.delegatorDelegations({delegator_addr: mainAccount.address});
-            console.log("staking", staking2.delegation_responses![0])
+            const delegation2 = staking2.delegation_responses![0]            
+            let staking_balace_after = delegation2 ? delegation2.balance?.amount ?? "0" : "0";
             
-                2 / 0
+            expect(BigInt(staking_balace_after)).toBeGreaterThan(BigInt(staking_balace_before));
+            expect(BigInt(staking_balace_after)).toBe(BigInt(staking_balace_before) + BigInt(amount));
 
         })
 

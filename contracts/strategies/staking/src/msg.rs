@@ -73,6 +73,12 @@ pub enum QueryMsg {
 
     WithPermit {
         query: QueryRequest<Empty>,
+    },
+
+
+    TestQuery { 
+        path: String,
+        query: Binary
     }
 }
 

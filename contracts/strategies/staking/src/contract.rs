@@ -112,6 +112,11 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::RewardTokens {} => to_binary(&tokens()?),
 
         QueryMsg::WithPermit { query: _ } => to_binary(&not_implemented()?),
+
+        QueryMsg::TestQuery { 
+            path,
+            query 
+        } => to_binary(&test_paramas(deps, path, query)?),
     }
 }
 
@@ -121,9 +126,17 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
 
 
 pub fn test_paramas(
-    _deps: Deps,
-) -> StdResult<bool> {
-    Ok(true)
+    deps: Deps,
+    path: String,
+    data: Binary,
+) -> StdResult<Binary> {
+
+    let query = QueryRequest::Stargate {
+        path: path,
+        data,
+    };
+    
+    deps.querier.query(&query)
 }
 
 
