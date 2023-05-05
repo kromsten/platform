@@ -1,9 +1,9 @@
 {
   "contracts": {
     "staking_strategy": {
-      "codeId": 37,
-      "codeHash": "83925917161cec27baa27583b684254a9a79b618d61bb0dfb75d36b296ad095f",
-      "address": "secret1upuqa5cdclsdxk0yrqlrcxzs5sxjqvz5g0p7xn"
+      "codeId": 40,
+      "codeHash": "6b8f9819153e43942c5106218db2d70f8dddd372b39a5ed7603c3ec68012cb4c",
+      "address": "secret1akkl00s30t6dprjjr2lr4n0dleuz0yk8g8whpd"
     }
   }
 }

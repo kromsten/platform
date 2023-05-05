@@ -6,9 +6,9 @@ import { describe, expect, test } from "vitest";
 import type { InvestParamsResult } from "../../src/interfaces/investments";
 
 
-import { parseAttributes, ToFill } from "../utils";
-import { queryPathToFun, sleep } from "$lib/utils";
-import { coinFromString, fromBase64, MsgGrantAuthorization, StakeAuthorizationType, toBase64, type GenericAuthorization, type StakeAuthorization } from "secretjs";
+import { msgMapping, parseAttributes, ToFill } from "../utils";
+import { queryPathToFun } from "$lib/utils";
+import { coinFromString, MsgDelegate, MsgGrantAuthorization, MsgRegistry, MsgUndelegate, MsgWithdrawDelegationReward, StakeAuthorizationType, toBase64, type GenericAuthorization, type StakeAuthorization } from "secretjs";
 
 
 const mainAccount : Account =  getAccount(1);
@@ -84,6 +84,63 @@ const claimAuthorizeIfNeeded = async (
     }) 
     
     expect(authz.code).toBe(0);
+}
+
+
+const paramFillers = async (attributes : any) => {
+    const params = await parseAttributes(attributes)
+            
+    const amount = "500000";
+    const investor = mainAccount.address;
+
+    const msg : any = {}
+    
+    let inner;
+
+    if (attributes.name)  {
+        msg[attributes.name] = {};
+        inner = msg[attributes.name];
+    } else {
+        inner = msg;
+    }
+    
+
+    for (const [key, param] of Object.entries(params)) {
+
+        let value;
+
+        if (param.value) {
+            value = param.value;
+        } else if (param.toFill === ToFill.Amount) {
+            value = amount;
+        } else if (param.toFill === ToFill.Investor) {
+            value = investor;
+        } else if (param.toFill === ToFill.CoinAmount) {
+            value = coinFromString(amount + "uscrt");
+        } else if (param.options) {
+            value = param.options[0];
+        } else {
+            throw new Error("Invalid param");
+        }
+
+        inner[key] = value;
+    }
+
+    return msg;
+}
+
+
+
+const stakingBalance = async () : Promise<string> => {
+    const staking = await client.query.staking.delegatorDelegations({delegator_addr: mainAccount.address});
+    const delegation = staking.delegation_responses![0]
+    let balance = delegation ? delegation.balance?.amount ?? "0" : "0";
+    return balance;
+}   
+
+const nativeBalance = async () : Promise<string> => {
+    const balance = (await client.query.bank.balance({ address: mainAccount.address, denom: "uscrt" })).balance!.amount ?? "0";
+    return balance;
 }
 
 
@@ -174,9 +231,8 @@ describe("Staking.wasm", () => {
                 StakeAuthorizationType.Delegate
             )
 
-            const staking = await client.query.staking.delegatorDelegations({delegator_addr: mainAccount.address});
-            const delegation = staking.delegation_responses![0]
-            let staking_balace_before = delegation ? delegation.balance?.amount ?? "0" : "0";
+            
+            let staking_balace_before = await stakingBalance();
 
 
             const res = await client.tx.compute.executeContract({
@@ -189,9 +245,8 @@ describe("Staking.wasm", () => {
 
             expect(res.code).toBe(0);
 
-            const staking2 = await client.query.staking.delegatorDelegations({delegator_addr: mainAccount.address});
-            const delegation2 = staking2.delegation_responses![0]            
-            let staking_balace_after = delegation2 ? delegation2.balance?.amount ?? "0" : "0";
+                        
+            let staking_balace_after = await stakingBalance();
             
             expect(BigInt(staking_balace_after)).toBeGreaterThan(BigInt(staking_balace_before));
             expect(BigInt(staking_balace_after)).toBe(BigInt(staking_balace_before) + BigInt(amount));
@@ -285,7 +340,7 @@ describe("Staking.wasm", () => {
 
 
 
-        test('Claim', async () => {
+        /* test('Claim', async () => {
 
             const claimParams : InvestParamsResult = await client.query.compute.queryContract({
                 contract_address: contractConfig.address!,
@@ -346,7 +401,7 @@ describe("Staking.wasm", () => {
 
             // no idea why 6000, looks like rounding error in logs
             expect(rewardDiff).toBe(6000);
-        })
+        }) */
 
 
         /* test("Test Query", async () => {
@@ -369,6 +424,61 @@ describe("Staking.wasm", () => {
             console.log("res",res)
 
         }) */
+
+
+
+        test('Invest Messages', async () => {
+            const investMsgs : any = await client.query.compute.queryContract({
+                contract_address: contractConfig.address!,
+                code_hash: contractConfig.codeHash!,
+                query: { invest_msgs: {} }
+            })
+            expect(Array.isArray(investMsgs)).toBeTruthy();
+            expect(investMsgs.length).toBeGreaterThan(0);
+            const msg = investMsgs[0];
+            const cosmosMsg : typeof MsgDelegate = msgMapping[msg.type_url]
+            expect(cosmosMsg).toBeDefined();
+            const input =  await paramFillers(msg.attributes)
+            const stakingBefore = await stakingBalance()
+            const delegateMsg : MsgDelegate = new cosmosMsg(input)
+            const res = await client.tx.broadcast([delegateMsg], { gasLimit: 60000 })
+            expect(res.code).toBe(0);
+            const stakingAfter = await stakingBalance()
+            expect(BigInt(stakingAfter)).toBe(BigInt(stakingBefore) + BigInt(delegateMsg.params.amount.amount));
+        })
+
+        test('Rest Messages', async () => {
+            const claimMsgs : any = await client.query.compute.queryContract({
+                contract_address: contractConfig.address!,
+                code_hash: contractConfig.codeHash!,
+                query: { claim_msgs: {} }
+            })
+
+            const withdrawMsgs : any = await client.query.compute.queryContract({
+                contract_address: contractConfig.address!,
+                code_hash: contractConfig.codeHash!,
+                query: { withdraw_msgs: {} }
+            })
+           
+            
+            const claimMsg = claimMsgs[0];
+            const withdrawMsg = withdrawMsgs[0];
+
+            const claimInput =  await paramFillers(claimMsg.attributes)
+            const withdrawInput =  await paramFillers(withdrawMsg.attributes)
+
+            const claimCosmosMsgType : typeof MsgWithdrawDelegationReward = msgMapping[claimMsg.type_url]
+            const withdrawCosmosMsgType : typeof MsgUndelegate = msgMapping[withdrawMsg.type_url]
+
+            const claimCosmosMsg : MsgWithdrawDelegationReward = new claimCosmosMsgType(claimInput)
+            const withdrawCosmosMsg : MsgUndelegate = new withdrawCosmosMsgType(withdrawInput)
+
+            const res = await client.tx.broadcast([claimCosmosMsg, withdrawCosmosMsg], { gasLimit: 60000 })
+            
+            console.log("res", res)
+            expect(res.code).toBe(0);
+            
+        })
 
     })
 

@@ -46,11 +46,21 @@ pub fn delegator_attribute() -> Attribute {
 pub fn amount_attribute() -> Attribute {
     Attribute {
         key: String::from("amount"),
-        value: Some(AttributeValue::Amount { }),
+        value: Some(AttributeValue::Amount {}),
         querier: None,
         optional: false
     }
 }
+
+pub fn coin_amount_attribute() -> Attribute {
+    Attribute {
+        key: String::from("amount"),
+        value: Some(AttributeValue::CoinAmount {}),
+        querier: None,
+        optional: false
+    }
+}
+
 
 
 pub fn invest_attributes(validator : Option<&String>) -> Vec<Attribute> {

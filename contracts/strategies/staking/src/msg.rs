@@ -100,6 +100,7 @@ pub enum AttributeValue {
     Investor {},
     Contract {},
     Amount {},
+    CoinAmount {},
     ViewingKey {},
     
     String {

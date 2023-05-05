@@ -1,4 +1,4 @@
-import { fromBase64, MsgDelegate, type Msg } from "secretjs";
+import { fromBase64, MsgDelegate, MsgUndelegate, MsgWithdrawDelegationReward, type Msg } from "secretjs";
 import { getAccount } from "./accounts";
 import { run } from "node-jq";
 import type { Attribute } from "../src/interfaces/investments";
@@ -16,9 +16,12 @@ const client = getAccount().secretjs
 
 
 
-const msgMapping : {[type : string] : any} = {
-    "/cosmos.staking.v1beta1.MsgDelegate": MsgDelegate
+export const msgMapping : {[type : string] : any} = {
+    "/cosmos.staking.v1beta1.MsgDelegate": MsgDelegate,
+    "/cosmos.staking.v1beta1.MsgUndelegate": MsgUndelegate,
+    "/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward": MsgWithdrawDelegationReward
 }
+
 
 const getDefaultParams = (type_url : string) : any => {
     return {};
@@ -49,7 +52,7 @@ export const decodeValue = (value : any) : any => {
 
 
 export enum ToFill  {
-    Investor, Amount
+    Investor, Amount, CoinAmount
 }
 
 
@@ -88,6 +91,8 @@ export const parseAttributes = async (attributes : Attribute[]) : Promise<Params
                 params[attr.key].toFill = ToFill.Investor
             } else if ('amount' in attr.value) {
                 params[attr.key].toFill = ToFill.Amount
+            }  else if ('coin_amount' in attr.value) {
+                params[attr.key].toFill = ToFill.CoinAmount
             }
 
         }

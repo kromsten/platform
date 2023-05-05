@@ -3,7 +3,7 @@ use cosmwasm_std::{Env};
 use crate::{
     contract::MAIN_CHAIN_ID, 
     msg::{InvestmentAction, ActionClass, ActionRequrement}, 
-    attributes::{validator_attribute, delegator_attribute, amount_attribute}
+    attributes::{validator_attribute, delegator_attribute, coin_amount_attribute}
 };
 
 
@@ -30,7 +30,7 @@ pub fn invest_msg() -> InvestmentAction {
         attributes: vec![
             validator_attribute(None, true),
             delegator_attribute(),
-            amount_attribute(),
+            coin_amount_attribute(),
         ],
         ..default_msg()
     }
@@ -46,6 +46,7 @@ pub fn withdraw_msg(
         attributes: vec![
             validator_attribute(validator, true),
             delegator_attribute(),
+            coin_amount_attribute()
         ],
         // now  + 21 days
         unbonding: Some(env.block.time.plus_seconds(1814400)),
