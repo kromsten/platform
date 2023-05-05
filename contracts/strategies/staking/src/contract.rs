@@ -39,7 +39,7 @@ pub fn instantiate(
         admin: deps.api.addr_canonicalize(&msg.admin.unwrap_or(info.sender.clone()).to_string())?,
         default_validator: msg.default_validator,
         can_query_rewards: false,
-        native_reinvest: true,
+        native_reinvest: false, // not imlemented yet
         private_queries: false,
     };
 
@@ -64,22 +64,22 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> S
             amount, 
             validator_address, 
             delegator_address 
-        } => try_withdraw(deps, info, amount, validator_address, delegator_address),
+        } => try_withdraw(deps, env, info, amount, validator_address, delegator_address),
 
         ExecuteMsg::Claim { 
             validator_address, 
             delegator_address 
-        } => try_claim(deps, info, validator_address, delegator_address),
+        } => try_claim(deps, env, info, validator_address, delegator_address),
 
         ExecuteMsg::ActivateReinvest { 
             validator_address, 
             delegator_address 
-        } => try_auto_reinvest(deps, info, validator_address, delegator_address, true),
+        } => try_auto_reinvest(deps, env, info, validator_address, delegator_address, true),
 
         ExecuteMsg::DeactivateReinvest { 
             validator_address, 
             delegator_address 
-        } => try_auto_reinvest(deps, info, validator_address, delegator_address, false),
+        } => try_auto_reinvest(deps, env, info, validator_address, delegator_address, false),
 
         ExecuteMsg::ChangeConfig { 
             admin, 
@@ -91,7 +91,7 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> S
 
 
 #[entry_point]
-pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
+pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::InvestParams {} =>  to_binary(&invest_params()?),
         QueryMsg::WithdrawParams {} =>  to_binary(&withdraw_params()?),
@@ -105,7 +105,7 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::RewardsQuery {} => to_binary(&rewards_query(deps)?),
         
         QueryMsg::InvestMsgs {} => to_binary(&invest_messages()?),
-        QueryMsg::WithdrawMsgs {address } => to_binary(&withdraw_messages(deps, address)?),
+        QueryMsg::WithdrawMsgs {address } => to_binary(&withdraw_messages(deps, env, address)?),
         QueryMsg::ClaimMsgs { address } => to_binary(&claim_messages(deps, address)?),
 
         QueryMsg::InvestTokens {} => to_binary(&tokens()?),
@@ -131,12 +131,21 @@ pub fn test_paramas(
     data: Binary,
 ) -> StdResult<Binary> {
 
-    let query = QueryRequest::Stargate {
+    let query : QueryRequest<Empty> = QueryRequest::Stargate {
         path: path,
         data,
     };
-    
-    deps.querier.query(&query)
+
+
+    let res = deps.querier.query(&query);
+
+    deps.api.debug(&format!("query res: {:?}", res));
+
+    let unwrapped = res.unwrap();
+
+    deps.api.debug(&format!("query unwrapped: {:?}", unwrapped));
+
+    Ok(unwrapped)
 }
 
 

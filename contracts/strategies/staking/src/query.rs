@@ -1,4 +1,4 @@
-use cosmwasm_std::{StdResult, Deps, Addr};
+use cosmwasm_std::{StdResult, Deps, Addr, Env};
 use secret_toolkit::utils::types::Token;
 
 use crate::{
@@ -63,9 +63,9 @@ pub fn invest_messages() -> StdResult<Vec<InvestmentAction>> {
 }
 
 
-pub fn withdraw_messages(deps: Deps, address : Option<Addr>) -> StdResult<Vec<InvestmentAction>> {
+pub fn withdraw_messages(deps: Deps, env: Env, address : Option<Addr>) -> StdResult<Vec<InvestmentAction>> {
     let msgs: Vec<InvestmentAction> = if address.is_none() {
-        vec![withdraw_msg(None)]
+        vec![withdraw_msg(env.clone(), None)]
     } else {
         let delegations = deps.querier.query_all_delegations(address.unwrap().to_string()).unwrap();
 
@@ -73,7 +73,7 @@ pub fn withdraw_messages(deps: Deps, address : Option<Addr>) -> StdResult<Vec<In
             vec![]
         }  else {
             delegations.iter()
-            .map(|delegation | withdraw_msg(Some(&delegation.validator)))
+            .map(|delegation | withdraw_msg(env.clone(), Some(&delegation.validator)))
             .collect()
         }
     };

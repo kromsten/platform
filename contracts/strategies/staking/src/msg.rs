@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, Binary, QueryRequest, Empty, Coin, Uint128};
+use cosmwasm_std::{Addr, Binary, QueryRequest, Empty, Coin, Uint128, Timestamp};
 use schemars::JsonSchema;
 use secret_toolkit::utils::types::Token;
 use serde::{Deserialize, Serialize};
@@ -159,7 +159,7 @@ pub struct AutoStakeMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
 pub struct Reward {
     token: Token,
-    amount: Uint128
+    amount: Uint128,
 }
 
 pub type IssuedToken = Reward;
@@ -200,7 +200,8 @@ pub struct InvestmentAction {
     pub description: Option<String>,
     pub class: ActionClass,
     pub action_requirements: Option<Vec<ActionRequrement>>,
-    pub independent_action_requirements: Option<Vec<ActionRequrement>>
+    pub independent_action_requirements: Option<Vec<ActionRequrement>>,
+    pub unbonding: Option<Timestamp>
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]

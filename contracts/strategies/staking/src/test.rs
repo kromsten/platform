@@ -3,7 +3,6 @@ mod tests {
     use crate::contract::{instantiate, query, execute};
     use crate::msg::{InvestParamsResult, Attribute, InstantiateMsg, QueryMsg, ExecuteMsg};
 
-    use super::*;
     use cosmwasm_std::{testing::*, Api, OwnedDeps, MemoryStorage, Addr};
     use cosmwasm_std::{from_binary, Coin, Uint128};
 

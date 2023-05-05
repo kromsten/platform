@@ -1,3 +1,5 @@
+use cosmwasm_std::{Env};
+
 use crate::{
     contract::MAIN_CHAIN_ID, 
     msg::{InvestmentAction, ActionClass, ActionRequrement}, 
@@ -16,7 +18,8 @@ fn default_msg() -> InvestmentAction {
         description: None,
         class: ActionClass::Staking {},
         action_requirements: None,
-        independent_action_requirements: Some(vec![ActionRequrement::Authz {}])
+        independent_action_requirements: Some(vec![ActionRequrement::Authz {}]),
+        unbonding: None,
     }
 }
 
@@ -35,6 +38,7 @@ pub fn invest_msg() -> InvestmentAction {
 
 
 pub fn withdraw_msg(
+    env: Env,
     validator : Option<&String>, 
 ) -> InvestmentAction {
     InvestmentAction {
@@ -43,6 +47,8 @@ pub fn withdraw_msg(
             validator_attribute(validator, true),
             delegator_attribute(),
         ],
+        // now  + 21 days
+        unbonding: Some(env.block.time.plus_seconds(1814400)),
         ..default_msg()
     }
 }
