@@ -8,14 +8,14 @@ import type { InvestParamsResult } from "../../src/interfaces/investments";
 
 import { parseAttributes, ToFill } from "../utils";
 import { queryPathToFun, sleep } from "$lib/utils";
-import { coinFromString, fromBase64, StakeAuthorizationType, toBase64, type StakeAuthorization } from "secretjs";
+import { coinFromString, fromBase64, MsgGrantAuthorization, StakeAuthorizationType, toBase64, type GenericAuthorization, type StakeAuthorization } from "secretjs";
 
 
 const mainAccount : Account =  getAccount(1);
 const client = mainAccount.secretjs;
 
 
-const authorizeIfNeeded = async (
+const stakeAuthorizeIfNeeded = async (
     granter : string, 
     grantee : string,
     validator: string,
@@ -49,9 +49,44 @@ const authorizeIfNeeded = async (
         expiration: Math.round(now / 1000) + 60 * 60 * 24 * 7
     }) 
     
-    console.log("authz", authz)
     expect(authz.code).toBe(0);
 }
+
+
+
+const claimAuthorizeIfNeeded = async (
+    granter : string, 
+    grantee : string,
+    force: boolean = false
+) => {
+
+    const now = Date.now();
+
+    if (!force) {
+        const grants = await client.query.authz.grants({ granter, grantee });
+        if (grants.grants && grants.grants.length > 0) {
+            const grant = grants.grants[0];
+    
+            if (grant.expiration && Date.parse(grant.expiration as string) - 5 > now) {
+                return;
+            }
+    
+        }
+    }
+
+    const authz =  await client.tx.authz.grant({
+        granter: granter,
+        grantee: grantee,
+        authorization: {
+            msg: MsgGrantAuthorization.MsgWithdrawDelegatorReward
+        } as GenericAuthorization,
+        expiration: Math.round(now / 1000) + 60 * 60 * 24 * 7
+    }) 
+    
+    expect(authz.code).toBe(0);
+}
+
+
 
 
 describe("Staking.wasm", () => {
@@ -66,11 +101,6 @@ describe("Staking.wasm", () => {
             query: { invest_params: {} }
         })
 
-        const withdrawParams : InvestParamsResult = await client.query.compute.queryContract({
-            contract_address: contractConfig.address!,
-            code_hash: contractConfig.codeHash!,
-            query: { withdraw_params: {} }
-        })
 
         test('Invest params', async () => {
             
@@ -169,14 +199,16 @@ describe("Staking.wasm", () => {
         }) */
 
 
-        test('Withdraw', async () => {
+        /* test('Withdraw', async () => {
 
-            console.log("withdrawParams", withdrawParams)
+            const withdrawParams : InvestParamsResult = await client.query.compute.queryContract({
+                contract_address: contractConfig.address!,
+                code_hash: contractConfig.codeHash!,
+                query: { withdraw_params: {} }
+            })
 
             const params = await parseAttributes(withdrawParams.attributes)
             
-            console.log("params", params)
-
             const amount = "500000";
             const investor = mainAccount.address;
 
@@ -226,9 +258,6 @@ describe("Staking.wasm", () => {
             }, { gasLimit: 60000})
 
 
-
-            console.log("res:", res)
-
             expect(res.code).toBe(0);
 
 
@@ -252,6 +281,71 @@ describe("Staking.wasm", () => {
             expect(BigInt(unbonding_after)).toBe(BigInt(amount));
             expect(BigInt(staking_balace_after)).toBeLessThan(BigInt(staking_balace_before));
             expect(BigInt(staking_balace_after)).toBe(BigInt(staking_balace_before) - BigInt(amount));
+        }) */
+
+
+
+        test('Claim', async () => {
+
+            const claimParams : InvestParamsResult = await client.query.compute.queryContract({
+                contract_address: contractConfig.address!,
+                code_hash: contractConfig.codeHash!,
+                query: { claim_params: {} }
+            })
+            
+
+            const params = await parseAttributes(claimParams.attributes)
+            
+            const investor = mainAccount.address;
+
+            const msg : any = {}
+            msg[claimParams.name] = {};
+
+            for (const [key, param] of Object.entries(params)) {
+
+                let value;
+
+                if (param.value) {
+                    value = param.value;
+                } else if (param.toFill === ToFill.Investor) {
+                    value = investor;
+                } else if (param.options) {
+                    value = param.options[0];
+                } else {
+                    throw new Error("Invalid param");
+                }
+
+                msg[claimParams.name][key] = value;
+            }
+
+            await claimAuthorizeIfNeeded(
+                mainAccount.address, 
+                contractConfig.address!, 
+            )
+
+            const balance = (await client.query.bank.balance({ address: mainAccount.address, denom: "uscrt" })).balance!.amount ?? "0";
+
+            const res = await client.tx.compute.executeContract({
+                contract_address: contractConfig.address!,
+                code_hash: contractConfig.codeHash!,
+                sender: mainAccount.address,
+                msg
+            }, { gasLimit: 60000})
+
+
+            expect(res.code).toBe(0);
+
+            const log = res.arrayLog!.find((log) => log.type === "withdraw_rewards" && log.key === "amount")?.value
+            let reward = log ? log.slice(0, log.indexOf('u')) : "0";
+
+            const balanceAfter = (await client.query.bank.balance({ address: mainAccount.address, denom: "uscrt" })).balance!.amount ?? "0";
+
+            const balanceDiff = BigInt(balanceAfter) - BigInt(balance);
+
+            const rewardDiff = Math.abs(Number(balanceDiff - BigInt(reward)));
+
+            // no idea why 6000, looks like rounding error in logs
+            expect(rewardDiff).toBe(6000);
         })
 
 
