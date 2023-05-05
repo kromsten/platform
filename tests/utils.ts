@@ -1,7 +1,8 @@
 import { fromBase64, MsgDelegate, type Msg } from "secretjs";
 import { getAccount } from "./accounts";
-import type { Attribute } from "./interfaces";
 import { run } from "node-jq";
+import type { Attribute } from "../src/interfaces/investments";
+import { queryPathToFun } from "$lib/utils";
 
 
 /* const client = new SecretNetworkClient({
@@ -12,13 +13,8 @@ import { run } from "node-jq";
 
 
 const client = getAccount().secretjs
-const querier = client.query
 
-const queryPathToFun = (path : string) : Function => {
-    if (path === "/cosmos.staking.v1beta1.Query/Validators") return querier.staking.validators.bind(client)
-    else if (path === "/cosmos.staking.v1beta1.Query/Validator") return querier.staking.validator.bind(client)
-    throw new Error("Not implemented");
-}
+
 
 const msgMapping : {[type : string] : any} = {
     "/cosmos.staking.v1beta1.MsgDelegate": MsgDelegate
@@ -44,42 +40,65 @@ export const decodeCustomValue = (type : string, value : string) : any => {
 
 
 export const decodeValue = (value : any) : any => {
-    if ("investor" in value) return { options: [ "alice", "bob" ] }
-    if ("contract" in value) return { value: "staking"};
-    if ("amount" in value) return { options: [ "1000", "2000" ] };
     if ("custom" in value) return { value: decodeCustomValue(value.custom.value_type, value.custom.value)};
+    else if ("investor" in value || "amount" in value) return value;
     throw new Error("Not implemented");
 }
 
 
-export const constructParams = async (attributes : Attribute[]) : Promise<any> => {
 
-    const params : any = {};
+
+export enum ToFill  {
+    Investor, Amount
+}
+
+
+export type Params = {
+    [key : string] : {
+        options? : any
+        value?: any
+        toFill?: ToFill
+
+    }
+}
+
+export const parseAttributes = async (attributes : Attribute[]) : Promise<Params> => {
+
+    const params : Params = {};
 
     const groupResults : {[group : number] : any} = {}
 
+
     for (const attr of attributes) {
 
+        if (!(attr.key in params)) {
+            params[attr.key] = {}
+        }
+
         if (attr.querier && !(attr.querier.group in groupResults)) { 
-            
-            const res = await queryPathToFun(attr.querier.path)(attr.querier.request);
+            const res = await queryPathToFun(attr.querier.path, client).bind(client)(attr.querier.request);
             groupResults[attr.querier.group] = res;
         }
 
         if (attr.value) {
-            params[attr.key] = decodeValue(attr.value)
+
+            if ('custom' in attr.value) {
+                params[attr.key].value = decodeValue(attr.value)
+            } else if ('investor' in attr.value) {
+                params[attr.key].toFill = ToFill.Investor
+            } else if ('amount' in attr.value) {
+                params[attr.key].toFill = ToFill.Amount
+            }
+
         }
     }
+
 
     for (const attr of attributes.filter(a => Boolean(a.querier))) {
         const res = groupResults[attr.querier!.group]
         const options : any = await run(attr.querier?.jq_parser!, res, { input: 'json', output: 'json' })
-        
-        params[attr.key] = {
-            options
-        }
+        params[attr.key].options = options
     }
-
 
 
     return params;

@@ -5,3 +5,4 @@ pub mod investments;
 pub mod attributes;
 pub mod query;
 pub mod execute;
+pub mod test;

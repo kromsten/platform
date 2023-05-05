@@ -2,7 +2,7 @@ import { PUBLIC_SCRT_CHAIN_ID } from "$env/static/public";
 import type { WalletConnector } from "../interfaces/functions";
 import { WalletType } from "../interfaces/enums";
 import { writable } from "svelte/store";
-import { secretClientSignable } from "./client";
+import { secretClientSignableStore } from "./client";
 
 
 export const secretAddress = writable<string>('');
@@ -43,5 +43,5 @@ export const disconnectWallet = async () => {
     localStorage.removeItem("connected");
     secretAddress.set("");
     connectedWallet.set(null);
-    secretClientSignable.set(false);
+    secretClientSignableStore.set(false);
 }

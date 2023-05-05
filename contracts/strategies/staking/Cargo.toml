@@ -38,10 +38,17 @@ cw-storage-plus = { version = "1.0.1", default-features = false }
 jaq-parse = "0.10.0"
 chumsky = "0.9.2"
 
+cosmos-sdk-proto = { version = "0.19.0", default-features = false }
 
 [dev-dependencies]
 cw-multi-test = "0.16.4"
 
+[package.metadata.scripts]
+optimize = """docker run --rm -v "$(pwd)":/code \
+  --mount type=volume,source="$(basename "$(pwd)")_cache",target=/code/target \
+  --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
+  cosmwasm/rust-optimizer:0.12.13
+"""
 
 [[bin]]
 name = "schema"

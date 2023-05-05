@@ -1,4 +1,3 @@
-//import { QueryClient, StargateClient } from "@cosmjs/stargate";
 import { SecretNetworkClient, Wallet } from "secretjs";
 import type { Account } from "./interfaces";
 
@@ -7,7 +6,7 @@ const a = "grant rice replace explain federal release fix clever romance raise o
 const b = "jelly shadow frog dirt dragon use armed praise universe win jungle close inmate rain oil canvas beauty pioneer chef soccer icon dizzy thunder meadow";
 const c = "chair love bleak wonder skirt permit say assist aunt credit roast size obtain minute throw sand usual age smart exact enough room shadow charge";
 
-const mnemonics = [a,/*  b, c */];
+const mnemonics = [a, b, /* c */];
 
 const accounts: Account[] = new Array<Account>(mnemonics.length);
 
@@ -25,10 +24,6 @@ for (let i = 0; i < mnemonics.length; i++) {
             chainId: "secretdev-1",
         }),
     };
-    
-    //StargateClient.connect("http://localhost:26657")
-    //Tendermint37Client.connect("http://localhost:26657")
-    //.then((client) => account.queryClient = new QueryClient(client));
   
     accounts[i] = account;
 

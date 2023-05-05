@@ -133,7 +133,7 @@ pub struct QueryBuilder {
 pub struct DelegateMsg {
     pub delegator_address: String,
     pub validator_address: String,
-    pub amount: Coin
+    pub amount: Option<Coin>
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]

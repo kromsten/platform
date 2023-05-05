@@ -10,8 +10,12 @@ declare global {
     interface Window extends KeplrWindow {}
 }
 
-export const secretClient = writable<SecretNetworkClient>();
-export const secretClientSignable = writable<boolean>(false);
+
+export let secretClient : SecretNetworkClient | undefined = undefined;
+export const secretClientStore = writable<SecretNetworkClient>();
+export const secretClientSignableStore = writable<boolean>(false);
+
+secretClientStore.subscribe(value => secretClient = value)
 
 
 export const initSecretClient = async () => {
@@ -19,9 +23,8 @@ export const initSecretClient = async () => {
         chainId: PUBLIC_SCRT_CHAIN_ID,
         url: PUBLIC_SCRT_ENDPOINT
     });
-    secretClient.set(client);
+    secretClientStore.set(client);
 }
-
 
 export const initSecretClientSignable = async () => {
     if (window.getOfflineSigner) {
@@ -40,8 +43,8 @@ export const initSecretClientSignable = async () => {
             wallet
         });
     
-        secretClient.set(client);
-        secretClientSignable.set(true);
+        secretClientStore.set(client);
+        secretClientSignableStore.set(true);
         secretAddress.set(account.address)
     }
 }
@@ -51,8 +54,8 @@ export const initSecretClientSignable = async () => {
 let secretClientValue : SecretNetworkClient | undefined;
 let secretClientSignableValue : boolean | undefined;
 
-secretClient.subscribe(value => secretClientValue = value);
-secretClientSignable.subscribe(value => secretClientSignableValue = value);
+secretClientStore.subscribe(value => secretClientValue = value);
+secretClientSignableStore.subscribe(value => secretClientSignableValue = value);
 
 
 export const getSecretClient = () => secretClientValue;

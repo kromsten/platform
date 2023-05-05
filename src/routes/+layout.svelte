@@ -14,7 +14,6 @@
 	import { secretAddress } from '$lib/connector';
 
 	onMount(init);
-
 </script>
 
 

@@ -1,10 +1,30 @@
-use cosmwasm_std::{DepsMut, MessageInfo, Response, StdResult, CosmosMsg, to_binary, coin, Uint128, StdError, Addr};
+use std::vec;
+
+use cosmwasm_std::{DepsMut, MessageInfo, Response, StdResult, CosmosMsg, to_binary, coin, Uint128, StdError, Addr, Binary, Env};
 
 use crate::{msg::{DelegateMsg, ClaimMsg, AutoStakeMsg}, state::{config_read, config}};
 
+use cosmos_sdk_proto::{
+    cosmos::{
+        base::v1beta1::Coin,
+        staking::v1beta1::MsgDelegate,
+        authz::v1beta1::MsgExec
+    }, 
+    traits::{Message, MessageExt}
+};
+
+
+pub fn execute_authz(msgs : Vec<CosmosMsg>) -> CosmosMsg {
+    CosmosMsg::Stargate {
+        type_url: "/cosmos.authz.v1beta1.MsgExec".to_string(),
+        value: to_binary(&msgs).unwrap(),
+    }
+}
+
 
 pub fn try_invest(
-    deps: DepsMut, 
+    deps: DepsMut,
+    env: Env,
     info: MessageInfo,
     amount: Uint128,
     validator_address: Option<String>,
@@ -15,16 +35,43 @@ pub fn try_invest(
     let validator = validator_address.unwrap_or(config.default_validator.to_string());
     let delegator = delegator_address.unwrap_or(info.sender.to_string());
     
-    let msg = CosmosMsg::Stargate { 
-        type_url: "/cosmos.staking.v1beta1.MsgDelegate".to_string(), 
-        value: to_binary(&DelegateMsg {
-            delegator_address: delegator,
-            validator_address: validator,
-            amount: coin(amount.u128(), "uscrt"),
-        })?,
+
+
+    deps.api.debug(format!("Investing {} SCRT in {} from {}", 
+        amount.clone(), 
+        validator.clone(),
+        delegator.clone(), 
+    ).as_str());
+
+
+    let delegate_msg = MsgDelegate {
+        amount: Some(Coin {
+            denom: "uscrt".to_string(),
+            amount: amount.u128().to_string(),
+        }),
+        delegator_address: delegator.clone(),
+        validator_address: validator.clone(),
     };
 
-    Ok(Response::default().add_message(msg))
+
+    let exec_bytes = MsgExec { 
+        grantee: env.contract.address.to_string(),
+        msgs: vec![delegate_msg.to_any().unwrap()], 
+    }.encode_to_vec();
+
+
+    let msg = CosmosMsg::Stargate {
+        type_url: "/cosmos.authz.v1beta1.MsgExec".to_string(),
+        value: Binary::from(exec_bytes),
+    };
+
+
+    Ok(Response::default()
+        .add_message(msg)
+        .add_attribute_plaintext("amount", amount)
+        .add_attribute_plaintext("validator", validator)
+        .add_attribute_plaintext("delegator", delegator)
+    )
 }
 
 
@@ -46,7 +93,7 @@ pub fn try_withdraw(
             value: to_binary(&DelegateMsg {
                 delegator_address: delegator,
                 validator_address: validator_address.unwrap(),
-                amount: coin(amount.u128(), "uscrt"),
+                amount: Some(coin(amount.u128(), "uscrt")),
             })?,
         })
     } else {
@@ -76,7 +123,7 @@ pub fn try_withdraw(
                 value: to_binary(&DelegateMsg {
                     delegator_address: delegator.clone(),
                     validator_address: delegation.validator,
-                    amount: coin(to_deduct.u128(), "uscrt"),
+                    amount: Some(coin(to_deduct.u128(), "uscrt")),
                 })?,
             });
 
