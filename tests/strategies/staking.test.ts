@@ -475,7 +475,6 @@ describe("Staking.wasm", () => {
 
             const res = await client.tx.broadcast([claimCosmosMsg, withdrawCosmosMsg], { gasLimit: 60000 })
             
-            console.log("res", res)
             expect(res.code).toBe(0);
             
         })

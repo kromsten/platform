@@ -25,7 +25,7 @@ pub fn instantiate(
 #[entry_point]
 pub fn execute(deps: DepsMut, _env: Env, info: MessageInfo, msg: ExecuteMsg) -> StdResult<Response> {
     match msg {
-        ExecuteMsg::AddRoute { address } => add_route(deps, info.sender, address)
+        ExecuteMsg::AddRoute { contract } => add_route(deps, info.sender, contract)
     }
 }
 

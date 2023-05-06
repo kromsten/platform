@@ -7,8 +7,9 @@ use crate::execute::{try_invest, try_withdraw, try_claim, try_change_config, try
 use crate::msg::{
     ExecuteMsg, 
     InstantiateMsg, 
-    QueryMsg
 };
+
+use strategy::QueryMsg;
 
 use crate::query::{
     invest_params, 

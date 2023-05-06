@@ -50,7 +50,6 @@ export const decodeValue = (value : any) : any => {
 
 
 
-
 export enum ToFill  {
     Investor, Amount, CoinAmount
 }

@@ -1,8 +1,7 @@
 use cosmwasm_std::{to_binary, QueryRequest};
+use crate::msg::{Attribute, AttributeValue, ValueQuerier};
 
-use strategy::{Attribute, AttributeValue, ValueQuerier};
-
-pub const ALL_VALDATORS_GROUP : u8 = 0;
+pub const ALL_VALIDATORS_GROUP : u8 = 0;
 
 pub fn validator_attribute(
     validator : Option<&String>,
@@ -23,7 +22,7 @@ pub fn validator_attribute(
                 request: QueryRequest::Staking({
                     cosmwasm_std::StakingQuery::AllValidators {}
                 }),
-                group: ALL_VALDATORS_GROUP, 
+                group: ALL_VALIDATORS_GROUP, 
                 jq_parser: String::from(".validators | map(.operator_address)")
             })
         } else { None },
@@ -60,24 +59,3 @@ pub fn coin_amount_attribute() -> Attribute {
         optional: false
     }
 }
-
-
-
-pub fn invest_attributes(validator : Option<&String>) -> Vec<Attribute> {
-    vec![
-        validator_attribute(validator, true),
-        delegator_attribute(),
-        amount_attribute()
-    ]
-}
-
-pub fn claim_attributes(validator : Option<&String>) -> Vec<Attribute> {
-    vec![
-        validator_attribute(validator, true),
-        delegator_attribute(),
-    ]
-}
-
-
-
-

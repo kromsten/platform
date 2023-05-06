@@ -16,6 +16,15 @@ const mainAccount : Account =  getAccount();
 const client = mainAccount.secretjs;
 
 
+
+const init_msgs : any = {
+    "staking_strategy": { 
+        default_validator: "secretvaloper1ap26qrlp8mcq2pg6r47w43l0y8zkqm8aynpdzc"
+    },
+    "router": {}
+}
+
+
 const loadContracts = async () => {
 
 
@@ -66,13 +75,11 @@ const loadContracts = async () => {
 
             const tx = await client.tx.compute.instantiateContract(
                 {
-                  sender: mainAccount.address,
-                  code_id: codeId!,
-                  code_hash: codeHash!,
-                  init_msg: { 
-                    default_validator: "secretvaloper1ap26qrlp8mcq2pg6r47w43l0y8zkqm8aynpdzc"
-                  },
-                  label: `${name}-${Date.now()}`,
+                sender: mainAccount.address,
+                code_id: codeId!,
+                code_hash: codeHash!,
+                init_msg: init_msgs[name],
+                label: `${name}-${Date.now()}`,
                 },
                 { gasLimit: 300_000 }
             );

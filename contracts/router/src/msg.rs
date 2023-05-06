@@ -1,5 +1,6 @@
-use cosmwasm_std::{Addr};
+use cosmwasm_std::{Addr, Binary};
 use schemars::JsonSchema;
+use secret_toolkit::utils::types::Contract;
 use serde::{Deserialize, Serialize};
 
 
@@ -12,7 +13,7 @@ pub struct InstantiateMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
-    AddRoute { address: Addr }
+    AddRoute { contract: Contract }
 }
 
 
@@ -23,3 +24,10 @@ pub enum QueryMsg {
 }
 
 
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum StrategyQueryMsg {
+
+    InvestTokens {},
+    RewardTokens {},
+}

@@ -1,0 +1,1 @@
+eae10f53547df0082554706b96927df848df517c98adb4512ca6c87700c4824b  ./target/wasm32-unknown-unknown/release/router.wasm

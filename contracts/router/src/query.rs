@@ -15,5 +15,6 @@ pub fn all_strategies(deps: Deps) -> StdResult<Vec<Strategy>> {
 
 
 pub fn strategies(_deps: Deps, _token: Token) -> StdResult<Vec<Strategy>> {
+    
     Ok(vec![])
 }

@@ -1,8 +1,8 @@
 use cosmwasm_std::{StdResult, Deps, Addr, Env};
 use secret_toolkit::utils::types::Token;
+use strategy::{InvestParamsResult, InvestmentAction, RewardResponse, RewardsQueryResponse, RequestBuilder};
 
 use crate::{
-    msg::{InvestParamsResult, InvestmentAction, RewardResponse, RewardsQueryResponse, RequestBuilder}, 
     attributes::{invest_attributes, claim_attributes, delegator_attribute, validator_attribute}, 
     investments::{invest_msg, withdraw_msg, claim_msg}
 };

@@ -2,9 +2,12 @@ use cosmwasm_std::{Env};
 
 use crate::{
     contract::MAIN_CHAIN_ID, 
-    msg::{InvestmentAction, ActionClass, ActionRequrement}, 
     attributes::{validator_attribute, delegator_attribute, coin_amount_attribute}
 };
+
+
+use strategy::{InvestmentAction, ActionClass, ActionRequrement};
+
 
 
 fn default_msg() -> InvestmentAction {
@@ -42,7 +45,7 @@ pub fn withdraw_msg(
     validator : Option<&String>, 
 ) -> InvestmentAction {
     InvestmentAction {
-        type_url: "/cosmos.staking.v1beta1.MsgDelegate".to_string(), 
+        type_url: "/cosmos.staking.v1beta1.MsgUndelegate".to_string(), 
         attributes: vec![
             validator_attribute(validator, true),
             delegator_attribute(),
@@ -53,7 +56,6 @@ pub fn withdraw_msg(
         ..default_msg()
     }
 }
-
 
 
 pub fn claim_msg(

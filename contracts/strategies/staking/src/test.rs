@@ -1,7 +1,8 @@
 #[cfg(test)]
 mod tests {
+    use strategy::{InvestParamsResult, Attribute, QueryMsg};
+    use crate::msg::{InstantiateMsg, ExecuteMsg};
     use crate::contract::{instantiate, query, execute};
-    use crate::msg::{InvestParamsResult, Attribute, InstantiateMsg, QueryMsg, ExecuteMsg};
 
     use cosmwasm_std::{testing::*, Api, OwnedDeps, MemoryStorage, Addr};
     use cosmwasm_std::{from_binary, Coin, Uint128};
