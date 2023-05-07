@@ -1,9 +1,10 @@
 #[cfg(test)]
 mod tests {
     use crate::contract::{instantiate};
+    use crate::error::ContractError;
     use crate::msg::{InstantiateMsg};
 
-    use cosmwasm_std::{testing::*, MessageInfo, Response, StdResult, StdError, DepsMut};
+    use cosmwasm_std::{testing::*, MessageInfo, Response, DepsMut};
     use cosmwasm_std::{Coin, Uint128};
 
 
@@ -16,7 +17,7 @@ mod tests {
         )
     }
 
-    pub fn default_init(deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
+    pub fn default_init(deps: DepsMut, info: MessageInfo) -> Result<Response, ContractError> {
         let init_msg = InstantiateMsg { admin: None };
         instantiate(deps, mock_env(), info, init_msg)
     }
@@ -25,7 +26,7 @@ mod tests {
     #[test]
     fn can_instantiate() {
         let mut deps = mock_dependencies();
-        let res: Result<Response, StdError> = default_init(deps.as_mut(), default_info());
+        let res: Result<Response, ContractError> = default_init(deps.as_mut(), default_info());
         assert!(res.is_ok());
         assert_eq!(0, res.unwrap().messages.len());
     }

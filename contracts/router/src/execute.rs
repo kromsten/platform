@@ -1,16 +1,20 @@
 use cosmwasm_std::{
     DepsMut, 
     Addr, 
-    StdResult, 
-    StdError, 
     Response, 
     WasmQuery, 
     QueryRequest, 
     Empty, 
-    to_binary, Event, Attribute, 
+    to_binary, Event, Attribute, Decimal, 
 };
+
 use secret_toolkit::utils::{types::{Contract, Token}};
-use crate::{state::{ADMIN, TokenStrategy, STRATEGY_ROUTER}, utils::unwrap_token};
+use crate::{
+    state::{TokenStrategy, STRATEGY_ROUTER, TRANSFORMATIONS, Transformation}, 
+    utils::{unwrap_token, check_admin}, 
+    msg::TransformationFee, 
+    error::ContractError
+};
 
 use strategy::{
     QueryMsg::{InvestTokens, RewardTokens, InvestMsgs, InvestParams}, 
@@ -23,12 +27,9 @@ pub fn add_route(
     deps: DepsMut,
     sender: Addr,
     contract: Contract,
-) -> StdResult<Response> {
+) -> Result<Response, ContractError> {
 
-    if ADMIN.load(deps.storage).unwrap() != sender {
-        return Err(StdError::GenericErr { msg: "Only admin can add routes".to_string() });
-    }
-
+    check_admin(deps.as_ref(), sender)?;
 
     let inputs_tokens : Vec<Token> = deps.querier.query(&QueryRequest::<Empty>::Wasm(WasmQuery::Smart { 
         contract_addr: contract.address.clone(), 
@@ -79,9 +80,11 @@ pub fn add_route(
         
         STRATEGY_ROUTER
         .add_suffix(token_name.as_bytes())
-        .insert(deps.storage, &contract.address, &TokenStrategy {
+        .push(deps.storage,  &TokenStrategy {
+            contract: contract.clone(),
             inputs: inputs_tokens.clone(),
             outputs: output_tokens.clone(),
+            apr: Decimal::zero()
         })?;
 
         attributes.push(
@@ -95,4 +98,32 @@ pub fn add_route(
             .add_attributes(attributes)
         )
     )
+}
+
+
+
+pub fn add_transformation(
+    deps: DepsMut, 
+    sender: Addr,
+    token_in : Token, 
+    token_out: Token,
+    actions: InvestmentAction,
+    fee: TransformationFee
+) -> Result<Response, ContractError> {
+
+    check_admin(deps.as_ref(), sender)?;
+    
+    let name_in = unwrap_token(&token_in).0;
+    let name_out = unwrap_token(&token_out).0;
+
+
+    TRANSFORMATIONS
+        .add_suffix(name_in.as_bytes())
+        .add_suffix(name_out.as_bytes())
+        .push(deps.storage, &Transformation {
+            actions,
+            fee,
+    })?;
+
+    Ok(Response::default())
 }

@@ -2,6 +2,7 @@ use cosmwasm_std::{
     entry_point, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult,
 };
 
+use crate::error::ContractError;
 use crate::execute::add_route;
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::query::token_strategies;
@@ -14,7 +15,7 @@ pub fn instantiate(
     _env: Env,
     info: MessageInfo,
     msg: InstantiateMsg,
-) -> StdResult<Response> {
+) -> Result<Response, ContractError> {
 
     let admin = msg.admin.unwrap_or(info.sender);
     ADMIN.save(deps.storage, &admin)?;
@@ -23,7 +24,7 @@ pub fn instantiate(
 }
 
 #[entry_point]
-pub fn execute(deps: DepsMut, _env: Env, info: MessageInfo, msg: ExecuteMsg) -> StdResult<Response> {
+pub fn execute(deps: DepsMut, _env: Env, info: MessageInfo, msg: ExecuteMsg) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::AddStrategy { contract } => add_route(deps, info.sender, contract)
     }
