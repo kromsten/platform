@@ -62,7 +62,6 @@ pub fn coin_amount_attribute() -> Attribute {
 }
 
 
-
 pub fn invest_attributes(validator : Option<&String>) -> Vec<Attribute> {
     vec![
         validator_attribute(validator, true),
@@ -70,6 +69,7 @@ pub fn invest_attributes(validator : Option<&String>) -> Vec<Attribute> {
         amount_attribute()
     ]
 }
+
 
 pub fn claim_attributes(validator : Option<&String>) -> Vec<Attribute> {
     vec![

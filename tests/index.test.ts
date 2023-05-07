@@ -84,6 +84,7 @@ const loadContracts = async () => {
                 { gasLimit: 300_000 }
             );
 
+            console.log("Instantiate contract:", tx);
 
             expect(tx.code).toBe(TxResultCode.Success);
             const address = MsgInstantiateContractResponse.decode(tx.data[0]).address;

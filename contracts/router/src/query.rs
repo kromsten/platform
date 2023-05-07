@@ -1,20 +1,19 @@
 use cosmwasm_std::{StdResult, Deps};
 use secret_toolkit::utils::types::Token;
 
-use crate::state::{Strategy, STRATEGY_ROUTER};
+use crate::{state::{TokenStrategy, STRATEGY_ROUTER}, utils::unwrap_token};
 
 
-pub fn all_strategies(deps: Deps) -> StdResult<Vec<Strategy>> {
-    let strategies : Vec<Strategy> = STRATEGY_ROUTER
+
+pub fn token_strategies(deps: Deps, token: Token) -> StdResult<Vec<TokenStrategy>> {
+    let name = unwrap_token(&token).0;
+    let suffix = name.as_bytes();
+
+    let strategies : Vec<TokenStrategy> = STRATEGY_ROUTER
+        .add_suffix(suffix)
         .iter(deps.storage)?
         .map(|item| item.unwrap().1)
-        .collect();
+        .collect(); 
 
     Ok(strategies)
-}
-
-
-pub fn strategies(_deps: Deps, _token: Token) -> StdResult<Vec<Strategy>> {
-    
-    Ok(vec![])
 }

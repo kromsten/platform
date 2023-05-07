@@ -4,13 +4,6 @@ use secret_toolkit::utils::types::Token;
 use serde::{Deserialize, Serialize};
 
 
-#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
-pub struct InstantiateMsg {
-    pub admin: Option<Addr>,
-    pub default_validator: Addr,
-}
-
-
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]

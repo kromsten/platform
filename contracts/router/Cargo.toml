@@ -33,6 +33,8 @@ thiserror = { version = "1.0" }
 cosmwasm-schema = "1.0.0"
 cw20 = "1.0.1"
 
+strategy = { path = "../../packages/strategy", version = "0.1.0" }
+
 secret-toolkit = { git = "https://github.com/scrtlabs/secret-toolkit", tag = "v0.8.1", default-features = false, features = ["utils", "storage", "serialization"] }
 # Uncomment these for some common extra tools
 # secret-toolkit = { git = "https://github.com/scrtlabs/secret-toolkit", tag = "v0.8.0" }

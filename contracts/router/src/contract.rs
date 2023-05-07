@@ -4,7 +4,7 @@ use cosmwasm_std::{
 
 use crate::execute::add_route;
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
-use crate::query::all_strategies;
+use crate::query::token_strategies;
 use crate::state::{ADMIN};
 
 
@@ -25,7 +25,7 @@ pub fn instantiate(
 #[entry_point]
 pub fn execute(deps: DepsMut, _env: Env, info: MessageInfo, msg: ExecuteMsg) -> StdResult<Response> {
     match msg {
-        ExecuteMsg::AddRoute { contract } => add_route(deps, info.sender, contract)
+        ExecuteMsg::AddStrategy { contract } => add_route(deps, info.sender, contract)
     }
 }
 
@@ -33,7 +33,7 @@ pub fn execute(deps: DepsMut, _env: Env, info: MessageInfo, msg: ExecuteMsg) -> 
 #[entry_point]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
-        QueryMsg::AllStrategies {} => to_binary(&all_strategies(deps)?)
+        QueryMsg::TokenStrategies { token } => to_binary(&token_strategies(deps, token)?)
     }
 }
 

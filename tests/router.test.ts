@@ -1,10 +1,15 @@
 import { expect, test, describe, it} from 'vitest';
 import { getAccount } from './accounts';
 import configuration from './config';
-import type { ContractConfig } from './interfaces';
+import type { ContractConfig, Strategy } from './interfaces';
+import { contractExecutor, contractQuerier } from './utils';
 
 const account = getAccount();
 const client = account.secretjs;
+
+
+
+
 
 describe('Routes', () => {
 
@@ -13,35 +18,51 @@ describe('Routes', () => {
     expect(config.codeId).toBeDefined();
     expect(config.address).toBeDefined();
 
+
+    
+    const queryContract = contractQuerier(client, config.address!, config.codeHash!);
+    const executeContract = contractExecutor(client, config.address!, config.codeHash!);
+
+
     const strategy = configuration.contracts["staking_strategy"];
 
-    const contract_address = config.address!;
-    const code_hash = config.codeHash!
 
-    test('Contract exists', async () => {
-        const res = await client.query.compute.queryContract({
-            contract_address,
-            code_hash,
-            query: { all_strategies: {}}
-        })
-        expect(res).toBeDefined();
-    });
+    test("Adding route is working", async () => {
 
+        /* await executeContract({ 
+            add_strategy: { 
+                contract: {
+                    address: strategy.address!,
+                    hash: strategy.codeHash!,
+                }
+            }
+        }) */
 
-    test("Add route", async () => {
-        const res = await client.tx.compute.executeContract({
-            sender: account.address,
-            contract_address,
-            code_hash,
-            msg: { add_route: { contract: {
-                address: strategy.address!,
-                hash: strategy.codeHash!,
-            } } }
-        }, {
-            gasLimit: 85_000,
-        })
+        const strategies : Strategy[] = await queryContract({ 
+            token_strategies: { token: { native: "uscrt" } 
+        }})
+        
+        console.log("Strategies:", strategies);
 
-        console.log("Add route:", res);
+        expect(Array.isArray(strategies)).toBe(true);
+        expect(strategies.length).toBeGreaterThan(0);
+
+        test("each strategy", () => {
+
+            it("should have at least one input and output", () => {
+                strategies.forEach(s => {
+                    expect(s.inputs.length).toBeGreaterThan(0)
+                    expect(s.outputs.length).toBeGreaterThan(0)
+                })
+            })
+
+            it("should have have uscrt as an input", () => {
+                expect(strategies.findIndex(s => 
+                    s.inputs.findIndex(inp =>  'native' in inp && inp.native === "uscrt") >= 0
+                )).toBeGreaterThan(-1)
+            })
+        });
+
     });
 
 

@@ -1,8 +1,9 @@
-import { fromBase64, MsgDelegate, MsgUndelegate, MsgWithdrawDelegationReward, type Msg } from "secretjs";
+import { fromBase64, MsgDelegate, MsgUndelegate, MsgWithdrawDelegationReward, SecretNetworkClient, type Msg, type TxResponse } from "secretjs";
 import { getAccount } from "./accounts";
 import { run } from "node-jq";
 import type { Attribute } from "../src/interfaces/investments";
 import { queryPathToFun } from "$lib/utils";
+import { expect } from "vitest";
 
 
 /* const client = new SecretNetworkClient({
@@ -106,5 +107,55 @@ export const parseAttributes = async (attributes : Attribute[]) : Promise<Params
 
 
     return params;
+
+}
+
+
+type QuerierFunction = (query : any) => Promise<any>
+type ExecutorFunction = (msg: any) => Promise<TxResponse> 
+
+
+export const contractQuerier = (
+    client : SecretNetworkClient,
+    contract_address : string, 
+    code_hash : string
+) : QuerierFunction => {
+
+    return async (query : any) : Promise<any> => {
+        const res = await client.query.compute.queryContract({
+            contract_address,
+            code_hash,
+            query
+        })
+
+        expect(res).toBeDefined();
+        return res;
+    }
+}
+
+
+
+export const contractExecutor = (
+    client : SecretNetworkClient,
+    contract_address : string, 
+    code_hash : string
+) : ExecutorFunction => {
+    
+    return async (msg : any) : Promise<any> => {
+        const res  =  await client.tx.compute.executeContract({
+            sender: client.address,
+            contract_address,
+            code_hash,
+            msg
+        }, { gasLimit: 500_000 })
+
+
+        console.log("Execute contract:", res);
+
+        expect(res).toBeDefined();
+        expect(res.code).toBe(0);
+        
+        return res;
+    }
 
 }
