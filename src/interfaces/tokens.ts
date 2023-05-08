@@ -1,5 +1,6 @@
 import type { Writable } from "svelte/store";
 import type { SecretNetworkClient } from "secretjs";
+import type Scrt from "$components/logos/scrt.svelte";
 
 export type SupportedToken = {
     type: "native" | "cw20";
@@ -9,7 +10,7 @@ export type SupportedToken = {
     address?: string;
     hash?: string;
     name?: string;
-    
+
 }
 
 

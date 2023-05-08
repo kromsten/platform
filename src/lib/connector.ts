@@ -4,7 +4,7 @@ import { PUBLIC_SCRT_CHAIN_ID } from "$env/static/public";
 import { networksState } from "./state";
 import { initSecretClientSignable } from "./client";
 import { supportedNetworks } from "../config";
-import { APP_PREFIX } from "$lib";
+import { APP_PREFIX, initTokens } from "$lib";
 import type { LocalStorageState, StorageNetworks } from "$interfaces/state";
 import { env } from "$env/dynamic/public";
 import { browser } from "$app/environment";
@@ -68,7 +68,7 @@ export const connectChain = async (chainId : string) => {
 
 
 export const connectSecret = async () => {
-  return await connectChain(PUBLIC_SCRT_CHAIN_ID)
+  return await connectChain(PUBLIC_SCRT_CHAIN_ID).then(initTokens)
 } 
 
 

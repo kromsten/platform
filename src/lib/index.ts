@@ -1,5 +1,5 @@
 import { PUBLIC_SCRT_CHAIN_ID } from "$env/static/public";
-import { supportedNetworks, supportedTokens } from "../config";
+import { defaultTokens, supportedNetworks, supportedTokens } from "../config";
 import type { Window as KeplrWindow } from "@keplr-wallet/types";
 import type { Coin } from "secretjs/dist/protobuf/cosmos/base/v1beta1/coin";
 import type { NetworkState } from "../interfaces/networks";
@@ -8,7 +8,7 @@ import type { SupportedToken } from "../interfaces/tokens";
 import { getContractBalances, getNativeBalances, getViewingKey } from "./balances";
 import { initSecretClient, initSecretClientSignable } from "./client";
 import { connectWallet } from "./connector";
-import { networksState, type Networks, type Tokens } from "./state";
+import { networksState, tokensState, type Networks, type Tokens } from "./state";
 import { getSubscribedValue, toHumanBalance } from "./utils";
 
 declare global {
@@ -16,6 +16,8 @@ declare global {
 }
 
 export const APP_PREFIX = "platform"
+
+
 
 
 export const defaultState = () => {
@@ -36,11 +38,7 @@ export const defaultState = () => {
             }
         };
 
-        state.tokens = {
-            'uscrt': {
-                permit: undefined
-            }
-        }
+        state.tokens = Object.fromEntries(defaultTokens.map((token : string) => ([ token, { permit: undefined }])));
 
         state.networks[PUBLIC_SCRT_CHAIN_ID] = {
             autoConnect: false
@@ -52,7 +50,8 @@ export const defaultState = () => {
 }
 
 
-const initNetworks = async (storageNetworks : StorageNetworks) => {
+const initNetworks = async () => {
+    const storageNetworks = defaultState().networks;
     let newNetworks: Networks = {};
 
     for (const [chainId, network] of Object.entries(storageNetworks)) {
@@ -82,7 +81,7 @@ const initNetworks = async (storageNetworks : StorageNetworks) => {
 
 
 
-export const initTokens = async (tokens : StorageTokens) => {
+export const initTokens = async () => {
     
     const newTokens : Tokens = {};
     let networks : Networks = await getSubscribedValue(networksState);
@@ -92,6 +91,7 @@ export const initTokens = async (tokens : StorageTokens) => {
         .filter(([_, network]) => network.connected)
 
     
+    
     const nativeResults = await Promise.allSettled(
         connectedNetworks.map(([_, network]) => getNativeBalances(network.client, network.address))
     ) 
@@ -100,7 +100,6 @@ export const initTokens = async (tokens : StorageTokens) => {
     const nativeBalances = nativeResults
             .filter((result) => result.status === "fulfilled")
             .map((result : any) => result.value as Coin[])
-
 
 
     for (const coins of nativeBalances) {
@@ -116,11 +115,12 @@ export const initTokens = async (tokens : StorageTokens) => {
         }
     }
 
-
+    const defTokens = defaultState().tokens;
+    const restTokens = Object.entries(defTokens).filter((entry) => !newTokens[entry[0]] && entry[0] in supportedTokens);
     
-    const restTokens = Object.entries(tokens).filter((entry) => !newTokens[entry[0]] && entry[0] in supportedTokens);
     networks  = await getSubscribedValue(networksState);
     
+
     const results = await Promise.allSettled(
         
         restTokens.map(async ([id, storageInfo]) => {
@@ -134,6 +134,7 @@ export const initTokens = async (tokens : StorageTokens) => {
 
             let permit, key;
 
+
             if (tokenInfo.chainId == PUBLIC_SCRT_CHAIN_ID) {
                 permit = storageInfo.permit;
                 if (!permit) {
@@ -145,14 +146,18 @@ export const initTokens = async (tokens : StorageTokens) => {
                 }
             }
 
-            return await getContractBalances(
-                networkInfo.client, 
-                networkInfo.address, 
-                tokenInfo.address!,
-                tokenInfo.hash,
-                permit,
-                key
-            )
+
+            return {
+                balance: await getContractBalances(
+                    networkInfo.client, 
+                    networkInfo.address, 
+                    tokenInfo.address!,
+                    tokenInfo.hash,
+                    permit,
+                    key
+                ),
+                token: tokenInfo.address!
+            }
 
         })
     );
@@ -160,18 +165,18 @@ export const initTokens = async (tokens : StorageTokens) => {
     
     const wasmBalances = results.filter((result) => result.status === "fulfilled").map((result : any) => result.value) 
 
-
-    for (const wasmBalance of wasmBalances) {
-        for (const balance of wasmBalance) {
-            const supported = supportedTokens[balance.token];
-            if (supported) {
-                newTokens[balance.token] = {
-                    balance: balance.balance,
-                    balanceNumber: toHumanBalance(balance.balance, supported.decimals)
-                }
+    for (const balance of wasmBalances) {
+        const supported = supportedTokens[balance.token];
+        if (supported) {
+            newTokens[balance.token] = {
+                balance: balance.balance,
+                balanceNumber: toHumanBalance(balance.balance, supported.decimals)
             }
         }
+        
     }
+
+    tokensState.set(newTokens)
 }
 
 
@@ -185,8 +190,8 @@ export const init = async () => {
             .map(([chainId, _]) => chainId);
 
     await connectWallet(autoConnectChainIds)
-    .then(() => initNetworks(state.networks))
-    .then(() => initTokens(state.tokens))
+    .then(() => initNetworks())
+    .then(() => initTokens())
     
 }
 

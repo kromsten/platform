@@ -1,9 +1,9 @@
-import { PUBLIC_SCRT_CHAIN_ID } from "$env/static/public";
 import type { SecretNetworkClient } from "secretjs";
 import type { Writable } from "svelte/store";
 import { secretClient } from "./client";
 
 
+export const BALANCE_PRECISION = 3;
 
 export const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 export const formatAddress = (address: string) => address.slice(0, 6) + "..." + address.slice(-4)
@@ -20,7 +20,7 @@ export const queryPathToFun = (path : string, client? : SecretNetworkClient) : F
 
 
 export const toHumanBalance = (balance: string, decimals: number) => {
-    return Number(BigInt(balance) / BigInt(10 ** decimals));
+    return Number(BigInt(balance) * BigInt(10**BALANCE_PRECISION) / BigInt(10 ** decimals)) / (10**BALANCE_PRECISION);
 }
 
 export const getSubscribedValue = async (store : Writable<any> ) : Promise<any> => {

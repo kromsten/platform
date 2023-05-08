@@ -32,15 +32,16 @@ export const getContractBalances = async (
             }
         }
     } else if (viewing_key) {
-        query.balance.viewing_key = viewing_key
+        query.balance.key = viewing_key
     }
 
-
-    return await client.query.compute.queryContract({
+    const res : { balance :  { amount : string }} =  await client.query.compute.queryContract({
         contract_address,
         code_hash,
         query
     })
+
+    return res.balance.amount
 }
 
 

@@ -9,3 +9,5 @@ export type Tokens = { [tokenId: string] : TokenState }
 
 export const networksState: Writable<Networks> = writable({});
 export const tokensState: Writable<Tokens> = writable({});
+
+export const selectedToken = writable<string | undefined>(undefined);

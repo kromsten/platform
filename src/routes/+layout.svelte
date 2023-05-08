@@ -12,9 +12,12 @@
 	import { formatAddress } from '$lib/utils';
 	import { PUBLIC_SCRT_CHAIN_ID } from '$env/static/public';
 	import { connectSecret } from '$lib/connector';
-	import { networksState } from '$lib/state';
+	import { networksState, tokensState } from '$lib/state';
 
 	$: secretAddress = $networksState[PUBLIC_SCRT_CHAIN_ID]?.address
+
+	//$: console.log('netwokrs', $networksState);
+	//$: console.log('tokens', $tokensState);
 
 	onMount(init);
 </script>
@@ -47,6 +50,7 @@
 			</svelte:fragment>
 		</AppBar>
 	</svelte:fragment>
+
 	<!-- Page Route Content -->
 	<slot />
 </AppShell>
