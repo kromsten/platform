@@ -25,7 +25,7 @@ pub fn unwrap_fee (fee : &TransformationFee) -> Decimal {
         TransformationFee::Fixed { fee } => { fee.clone() },
         TransformationFee::Percentage { fee } => { fee.clone() }
         TransformationFee::QueryBuilder { builder: _} => { 
-            panic!("Not implemented yet")
+            panic!("Not for unwrapping!")
         }
     }
 }

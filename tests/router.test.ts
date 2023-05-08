@@ -10,7 +10,6 @@ const client = account.secretjs;
 
 
 
-
 describe('Routes', () => {
 
     let config : ContractConfig = configuration.contracts["router"];

@@ -1,7 +1,10 @@
 use cosmwasm_std::{StdResult, Deps};
 use secret_toolkit::utils::types::Token;
 
-use crate::{state::{TokenStrategy, STRATEGY_ROUTER, Transformation, TRANSFORMATIONS}, utils::{unwrap_token, unwrap_fee}};
+use crate::{
+    state::{TokenStrategy, STRATEGY_ROUTER, Transformation, TRANSFORMATIONS}, 
+    utils::{unwrap_token, unwrap_fee}
+};
 
 
 
@@ -39,7 +42,7 @@ pub fn transformations(deps: Deps, token_in: Token, token_out: Token) -> StdResu
 }
 
 
-
+// TODO: Implement this
 pub fn calculate_strategies(deps: Deps, token: Token) -> StdResult<Vec<TokenStrategy>> {
     let normal_strategies : Vec<TokenStrategy> = token_strategies(deps, token.clone())?;
     let strategies = normal_strategies;

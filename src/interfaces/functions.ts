@@ -1,1 +1,1 @@
-export type WalletConnector = () => Promise<boolean>
+export type WalletConnector = (chainId: string | string[]) => Promise<boolean>

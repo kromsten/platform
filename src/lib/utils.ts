@@ -1,4 +1,6 @@
+import { PUBLIC_SCRT_CHAIN_ID } from "$env/static/public";
 import type { SecretNetworkClient } from "secretjs";
+import type { Writable } from "svelte/store";
 import { secretClient } from "./client";
 
 
@@ -13,4 +15,14 @@ export const queryPathToFun = (path : string, client? : SecretNetworkClient) : F
     client ||= secretClient; 
     if (path === "/cosmos.staking.v1beta1.Query/Validators") return client!.query.staking.validators.bind(client);
     throw new Error("Not implemented");
+}
+
+
+
+export const toHumanBalance = (balance: string, decimals: number) => {
+    return Number(BigInt(balance) / BigInt(10 ** decimals));
+}
+
+export const getSubscribedValue = async (store : Writable<any> ) : Promise<any> => {
+    return new Promise((resolve, _) => resolve(store.subscribe(value => resolve(value))))
 }

@@ -6,12 +6,15 @@
 	// Most of your app wide CSS should be put in this file
 	import '../app.postcss';
 	import { AppShell, AppBar } from '@skeletonlabs/skeleton';
-	import { initSecretClientSignable } from '$lib/client';
 	import { onMount } from 'svelte';
 
 	import { init } from '$lib';
 	import { formatAddress } from '$lib/utils';
-	import { secretAddress } from '$lib/connector';
+	import { PUBLIC_SCRT_CHAIN_ID } from '$env/static/public';
+	import { connectSecret } from '$lib/connector';
+	import { networksState } from '$lib/state';
+
+	$: secretAddress = $networksState[PUBLIC_SCRT_CHAIN_ID]?.address
 
 	onMount(init);
 </script>
@@ -28,14 +31,14 @@
 			</svelte:fragment>
 			<svelte:fragment slot="trail">
 
-			{ #if $secretAddress }
+			{ #if secretAddress }
 				<span>
-					<span class="text-sm font-bold">{ formatAddress($secretAddress) }</span>
+					<span class="text-sm font-bold">{ formatAddress(secretAddress) }</span>
 				</span>
 			{ :else }
 				<button
 					class="btn btn-sm variant-ghost-surface"
-					on:click={initSecretClientSignable}
+					on:click={() => connectSecret()}
 				>
 					Connect
 				</button>

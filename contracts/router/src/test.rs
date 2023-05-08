@@ -57,4 +57,9 @@ mod tests {
         assert_eq!(1, strategies.len()); */
     }
 
+    #[test]
+    fn can_add_transformations() {
+        
+    }
+
 }
