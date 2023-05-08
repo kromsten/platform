@@ -15,7 +15,6 @@ declare global {
     interface Window extends KeplrWindow {}
 }
 
-
 export const APP_PREFIX = "platform"
 
 

@@ -8,4 +8,4 @@ export type Networks = {  [networkId: string] : NetworkState }
 export type Tokens = { [tokenId: string] : TokenState } 
 
 export const networksState: Writable<Networks> = writable({});
-export const tokens: Writable<Tokens> = writable({});
+export const tokensState: Writable<Tokens> = writable({});

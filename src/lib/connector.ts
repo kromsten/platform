@@ -4,6 +4,10 @@ import { PUBLIC_SCRT_CHAIN_ID } from "$env/static/public";
 import { networksState } from "./state";
 import { initSecretClientSignable } from "./client";
 import { supportedNetworks } from "../config";
+import { APP_PREFIX } from "$lib";
+import type { LocalStorageState, StorageNetworks } from "$interfaces/state";
+import { env } from "$env/dynamic/public";
+import { browser } from "$app/environment";
 
 
 
@@ -71,4 +75,22 @@ export const connectSecret = async () => {
 
 
 
+
+
 export const disconnectWallet = async (chainId : string) => {}
+
+
+
+
+networksState.subscribe(networks => {
+  if (!browser || Object.keys(networks).length == 0) return;
+
+  const readState = localStorage.getItem(`${APP_PREFIX}_state`)
+  if (!readState) return;
+  const state : LocalStorageState = JSON.parse(readState)
+  Object.entries(networks)
+    .forEach(([chainId, network]) => {
+      state.networks[chainId] = {autoConnect: network.connected}
+  })
+  localStorage.setItem(`${APP_PREFIX}_state`, JSON.stringify(state))
+})
