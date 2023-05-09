@@ -8,4 +8,7 @@ pub enum ContractError {
 
     #[error("Unauthorized")]
     Unauthorized {},
+
+    #[error("Strategy with this address already exists")]
+    StrategyAlreadyExists {},
 }

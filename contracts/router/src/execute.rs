@@ -23,7 +23,7 @@ use strategy::{
 
 
 
-pub fn add_route(
+pub fn add_strategy(
     deps: DepsMut,
     sender: Addr,
     contract: Contract,
@@ -78,9 +78,16 @@ pub fn add_route(
 
         let token_name = unwrap_token(&token).0;
         
-        STRATEGY_ROUTER
-        .add_suffix(token_name.as_bytes())
-        .push(deps.storage,  &TokenStrategy {
+        let prefixed =STRATEGY_ROUTER.add_suffix(token_name.as_bytes());
+
+        if prefixed.iter(deps.storage)?.any(|strategy| 
+            strategy.unwrap().contract.address == contract.address
+        ) {
+            return Err(ContractError::StrategyAlreadyExists {})
+        }
+
+
+        prefixed.push(deps.storage,  &TokenStrategy {
             contract: contract.clone(),
             inputs: inputs_tokens.clone(),
             outputs: output_tokens.clone(),

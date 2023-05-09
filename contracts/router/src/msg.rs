@@ -8,7 +8,7 @@ use strategy::QueryBuilder;
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
 pub struct InstantiateMsg {
-    pub admin: Option<Addr>,
+    pub admin: Option<Addr>
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]

@@ -3,7 +3,7 @@ use cosmwasm_std::{
 };
 
 use crate::error::ContractError;
-use crate::execute::add_route;
+use crate::execute::add_strategy;
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::query::token_strategies;
 use crate::state::{ADMIN};
@@ -26,7 +26,7 @@ pub fn instantiate(
 #[entry_point]
 pub fn execute(deps: DepsMut, _env: Env, info: MessageInfo, msg: ExecuteMsg) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::AddStrategy { contract } => add_route(deps, info.sender, contract)
+        ExecuteMsg::AddStrategy { contract } => add_strategy(deps, info.sender, contract)
     }
 }
 
