@@ -8,8 +8,10 @@ import type { SupportedToken } from "../interfaces/tokens";
 import { getContractBalances, getNativeBalances, getViewingKey } from "./balances";
 import { initSecretClient, initSecretClientSignable } from "./client";
 import { connectWallet } from "./connector";
-import { networksState, tokensState, type Networks, type Tokens } from "./state";
+import { currentStrategies, investmentMessages, networksState, selectedStrategy, selectedToken, strategyState, tokensState, type Networks, type Strategies, type Tokens } from "./state";
 import { getSubscribedValue, toHumanBalance } from "./utils";
+import { getStrategies, getStrategyMessages } from "./strategies";
+import type { RouterStrategy } from "$interfaces/contracts";
 
 declare global {
     interface Window extends KeplrWindow {}
@@ -61,16 +63,17 @@ const initNetworks = async () => {
 
         let networkInfo = supportedNetworks[chainId] 
 
-        if (network.autoConnect) {
+        if (networkInfo && network.autoConnect) {
             networkState.client = await initSecretClientSignable(chainId, networkInfo.nodeUrl)
             if (networkState.client) {
                 networkState.address = networkState.client.address;
                 networkState.connected = true;
             }
+
+            networkState.client ||= initSecretClient(chainId, networkInfo.nodeUrl)
+            newNetworks[chainId] = networkState as NetworkState;
         }
 
-        networkState.client ||= initSecretClient(chainId, networkInfo.nodeUrl)
-        newNetworks[chainId] = networkState as NetworkState;
     };
     
 
@@ -102,28 +105,30 @@ export const initTokens = async () => {
             .map((result : any) => result.value as Coin[])
 
 
+    
+
     for (const coins of nativeBalances) {
         for (const coin of coins) {
             const supported = supportedTokens[coin.denom];
             if (supported) {
                 newTokens[coin.denom] = {
                     balance: coin.amount,
-                    balanceNumber: toHumanBalance(coin.amount, supported.decimals)
+                    balanceNumber: toHumanBalance(coin.amount, supported.decimals),
                 }
             }
-
         }
     }
+
 
     const defTokens = defaultState().tokens;
     const restTokens = Object.entries(defTokens).filter((entry) => !newTokens[entry[0]] && entry[0] in supportedTokens);
     
     networks  = await getSubscribedValue(networksState);
     
-
     const results = await Promise.allSettled(
         
         restTokens.map(async ([id, storageInfo]) => {
+
             
             const tokenInfo : SupportedToken = supportedTokens[id]!;
             const networkInfo : NetworkState = networks[tokenInfo.chainId!];
@@ -134,17 +139,11 @@ export const initTokens = async () => {
 
             let permit, key;
 
-
-            if (tokenInfo.chainId == PUBLIC_SCRT_CHAIN_ID) {
-                permit = storageInfo.permit;
-                if (!permit) {
-                    key = await getViewingKey(tokenInfo.address!)
-                }
-
-                if (!permit && !key) {
-                    throw new Error("Runtime error");
-                }
+            if (tokenInfo.address) {
+                permit = storageInfo.permit
+                key = await getViewingKey(tokenInfo.address)
             }
+
 
 
             return {
@@ -155,22 +154,26 @@ export const initTokens = async () => {
                     tokenInfo.hash,
                     permit,
                     key
-                ),
-                token: tokenInfo.address!
+                ) || "0",
+                token: tokenInfo.address!,
+                permit,
+                key
             }
 
         })
     );
 
     
-    const wasmBalances = results.filter((result) => result.status === "fulfilled").map((result : any) => result.value) 
+    const wasmProcessesed = results.filter((result) => result.status === "fulfilled").map((result : any) => result.value) 
 
-    for (const balance of wasmBalances) {
-        const supported = supportedTokens[balance.token];
+    for (const processed of wasmProcessesed) {
+        const supported = supportedTokens[processed.token];
         if (supported) {
-            newTokens[balance.token] = {
-                balance: balance.balance,
-                balanceNumber: toHumanBalance(balance.balance, supported.decimals)
+            newTokens[processed.token] = {
+                balance: processed.balance,
+                balanceNumber: toHumanBalance(processed.balance, supported.decimals),
+                permit: processed.permit,
+                viewingKey: processed.key
             }
         }
         
@@ -192,6 +195,27 @@ export const init = async () => {
     await connectWallet(autoConnectChainIds)
     .then(() => initNetworks())
     .then(() => initTokens())
+
+
+    selectedToken.subscribe(async (token) => {
+        if (!token) return;
+        const strategies : Strategies = await getSubscribedValue(strategyState);
+        let tokenStrategies : RouterStrategy[] = [];
+        if (token in strategies) {
+            tokenStrategies = strategies[token];
+        } else {
+            tokenStrategies = await getStrategies(token);
+        }
+        currentStrategies.set(tokenStrategies)
+    })
+
+    selectedStrategy.subscribe((strategy) => {
+        if (!strategy) return;
+        getStrategyMessages(strategy.contract.address)
+        .then((messages) => investmentMessages.set(messages))
+    })
+
+
     
 }
 

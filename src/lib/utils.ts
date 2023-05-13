@@ -1,14 +1,23 @@
+import type { TokenState } from "$interfaces/tokens";
 import type { SecretNetworkClient } from "secretjs";
 import type { Writable } from "svelte/store";
+import { supportedTokens } from "../config";
 import { secretClient } from "./client";
 
 
-export const BALANCE_PRECISION = 3;
+export const BALANCE_PRECISION = 2;
 
 export const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-export const formatAddress = (address: string) => address.slice(0, 6) + "..." + address.slice(-4)
+
+export const formatAddress = (address: string, symbols: number = 4) => 
+    address.slice(0, symbols+2) + "..." + address.slice(-symbols)
 
 
+export const formatBalance = (denom: string, state: TokenState) => {
+    const info = supportedTokens[denom];
+    const human = state.balanceNumber ?? toHumanBalance(state.balance, info.decimals);
+    return [info.name ?? info.symbol, Number.isInteger(human) ? human.toFixed(0) : human.toFixed(BALANCE_PRECISION)]
+}
 
 
 export const queryPathToFun = (path : string, client? : SecretNetworkClient) : Function => {

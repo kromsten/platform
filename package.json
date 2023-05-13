@@ -44,6 +44,7 @@
   },
   "type": "module",
   "dependencies": {
+    "@floating-ui/dom": "^1.2.7",
     "node-jq": "^2.3.5",
     "secretjs": "^1.8.1"
   }

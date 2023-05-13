@@ -1,7 +1,7 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use cosmwasm_std::{Storage, CanonicalAddr, Addr};
+use cosmwasm_std::{Storage, CanonicalAddr, Addr, Decimal};
 use cosmwasm_storage::{singleton, singleton_read, ReadonlySingleton, Singleton};
 
 pub static CONFIG_KEY: &[u8] = b"config";
@@ -14,6 +14,8 @@ pub struct Config {
     pub native_reinvest: bool,
     pub can_query_rewards: bool,
     pub private_queries: bool,
+    pub description: String,
+    pub apr: Decimal
 }
 
 pub fn config(storage: &mut dyn Storage) -> Singleton<Config> {

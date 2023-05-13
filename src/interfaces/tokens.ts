@@ -1,6 +1,4 @@
-import type { Writable } from "svelte/store";
-import type { SecretNetworkClient } from "secretjs";
-import type Scrt from "$components/logos/scrt.svelte";
+import type { Permit } from "secretjs";
 
 export type SupportedToken = {
     type: "native" | "cw20";
@@ -17,5 +15,7 @@ export type SupportedToken = {
 export interface TokenState {
     balance: string;
     balanceNumber: number;
+    viewingKey?: string;
+    permit?: Permit
 }
 

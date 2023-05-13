@@ -1,0 +1,14 @@
+{
+  "contracts": {
+    "router": {
+      "codeId": 63,
+      "codeHash": "0898ab1a320db56b8a9b7f8e8ee207ce5195dc583847492d9c0e343301e463a3",
+      "address": "secret17kumg47f9rxg73u52y703544mykj3a8rl0rh4h"
+    },
+    "staking_strategy": {
+      "codeId": 64,
+      "codeHash": "5c3fff2812d5ddb69fcc8ca9919e4d2e424419c25fc694c67bc867da0e1df291",
+      "address": "secret18y8wreuffh2rtpc3xzafzjx7gqqzf0qe2jkzvl"
+    }
+  }
+}

@@ -48,6 +48,8 @@ export const getContractBalances = async (
 
 
 
+
+
 export const getViewingKey = async (contractAddress : string) => {
     return await window.keplr?.getSecret20ViewingKey(PUBLIC_SCRT_CHAIN_ID, contractAddress)
 } 

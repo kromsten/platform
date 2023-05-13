@@ -14,20 +14,21 @@ export const supportedTokens : TokensOfInterest = {
         
     },
 
-    /* secret1k0jntykt7e4g3y88ltc60czgjuqdy4c9e8fzek: {
+    secret1k0jntykt7e4g3y88ltc60czgjuqdy4c9e8fzek: {
         chainId: "secret-4",
         decimals: 6,
         type: "cw20",
         symbol: "sSCRT",
         address: "secret1k0jntykt7e4g3y88ltc60czgjuqdy4c9e8fzek",
         hash: "AF74387E276BE8874F07BEC3A87023EE49B0E7EBE08178C49D0A49C3C98ED60E"
-    } */
+    }
 }
 
 
 
 export const supportedNetworks : SupportedNetworks = {
-    "secret-4": { nodeUrl: "https://lcd.mainnet.secretsaturn.net:443" }
+    "secret-4": { nodeUrl: "https://lcd.mainnet.secretsaturn.net:443" },
+    "secretdev-1": { nodeUrl: "http://localhost:1317" }
 };
 
 

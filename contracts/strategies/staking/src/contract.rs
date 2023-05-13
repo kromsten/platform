@@ -1,6 +1,8 @@
+use std::str::FromStr;
+
 use cosmwasm_std::{
     Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, QueryRequest, Empty, DelegationResponse,
-    entry_point, to_binary
+    entry_point, to_binary, Decimal
 };
 
 use crate::execute::{try_invest, try_withdraw, try_claim, try_change_config, try_auto_reinvest};
@@ -19,7 +21,7 @@ use crate::query::{
     withdraw_messages, 
     claim_messages, 
     rewards_query,
-    tokens, not_implemented, 
+    tokens, not_implemented, apr, strategy_info, strategy_full_info, 
 };
 
 use crate::state::{config, Config};
@@ -35,19 +37,18 @@ pub fn instantiate(
     msg: InstantiateMsg,
 ) -> StdResult<Response> {
 
-    
     let state = Config {
         admin: deps.api.addr_canonicalize(&msg.admin.unwrap_or(info.sender.clone()).to_string())?,
         default_validator: msg.default_validator,
         can_query_rewards: false,
         native_reinvest: false, // not imlemented yet
         private_queries: false,
+        description: String::from("Native Secret Network Staking Strategy"),
+        apr: Decimal::from_str("20.5")?
     };
 
     deps.api.debug(format!("Contract was initialized by {}", info.sender).as_str());
-
     config(deps.storage).save(&state)?;
-
     Ok(Response::default())
 }
 
@@ -100,9 +101,9 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
 
         QueryMsg::AllRewards {} => to_binary(&not_implemented()?),
         QueryMsg::Rewards { token: _ } => to_binary(&not_implemented()?),
-        QueryMsg::Apr {} => to_binary(&not_implemented()?),
+        QueryMsg::Apr {} => to_binary(&apr(deps)?),
         
-        QueryMsg::AprQuery {  } => to_binary(&not_implemented()?),
+        QueryMsg::AprQuery {} => to_binary(&not_implemented()?),
         QueryMsg::RewardsQuery {} => to_binary(&rewards_query(deps)?),
         
         QueryMsg::InvestMsgs {} => to_binary(&invest_messages()?),
@@ -113,6 +114,9 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::RewardTokens {} => to_binary(&tokens()?),
 
         QueryMsg::WithPermit { query: _ } => to_binary(&not_implemented()?),
+
+        QueryMsg::StrategyInfo {} => to_binary(&strategy_info(deps)?),
+        QueryMsg::StrategyFullInfo { address } => to_binary(&strategy_full_info(deps, env, address)?),
 
         QueryMsg::TestQuery { 
             path,

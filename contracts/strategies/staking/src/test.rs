@@ -53,7 +53,9 @@ mod tests {
                 amount: Uint128::new(2),
             }],
         );
-        let init_msg = InstantiateMsg { admin: None, default_validator: Addr::unchecked("validator")};
+        let init_msg = InstantiateMsg { 
+            admin: None, 
+            default_validator: Addr::unchecked("validator")};
 
         let _res = instantiate(deps.as_mut(), mock_env(), info.clone(), init_msg).unwrap();
 

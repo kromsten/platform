@@ -1,10 +1,18 @@
-use cosmwasm_std::{StdResult, Deps, Addr, Env};
+use cosmwasm_std::{StdResult, Deps, Addr, Env, Decimal};
 use secret_toolkit::utils::types::Token;
-use strategy::{InvestParamsResult, InvestmentAction, RewardResponse, RewardsQueryResponse, RequestBuilder};
+use strategy::{
+    InvestParamsResult, 
+    InvestmentAction, 
+    RewardResponse, 
+    RewardsQueryResponse, 
+    RequestBuilder,
+    StrategyInfoResponse,
+    StrategyFullInfoResponse
+};
 
 use crate::{
     attributes::{invest_attributes, claim_attributes, delegator_attribute, validator_attribute}, 
-    investments::{invest_msg, withdraw_msg, claim_msg}
+    investments::{invest_msg, withdraw_msg, claim_msg}, state::{Config, config_read}
 };
 
 
@@ -35,6 +43,65 @@ pub fn claim_params() -> StdResult<InvestParamsResult> {
         attributes: claim_attributes(None)
     })
 }
+
+
+pub fn apr(deps: Deps) -> StdResult<Decimal> {
+    let config = config_read(deps.storage).load().unwrap();
+    Ok(config.apr)
+}
+
+
+
+
+pub fn strategy_info(deps: Deps) -> StdResult<StrategyInfoResponse> {
+    let config = config_read(deps.storage).load().unwrap();
+    
+    let info = StrategyInfoResponse {
+        description: config.description,
+        invest_tokens: tokens()?,
+        reward_tokens: tokens()?,
+        apr: config.apr,
+        invest_params: invest_params()?,
+        invest_msgs: invest_messages()?,
+    };
+
+    Ok(info)
+}
+
+
+pub fn strategy_full_info(deps: Deps, env: Env, address : Option<Addr>) -> StdResult<StrategyFullInfoResponse> {
+    let config = config_read(deps.storage).load().unwrap();
+    
+    let info = StrategyFullInfoResponse {
+        description: config.description,
+        
+        invest_tokens: tokens()?,
+        reward_tokens: tokens()?,
+
+        apr: config.apr,
+        
+        invest_params: invest_params()?,
+        withdraw_params: withdraw_params()?,
+        claim_params: claim_params()?,
+        
+        invest_msgs: invest_messages()?,
+        withdraw_msgs: withdraw_messages(deps, env, address.clone())?,
+        claim_msgs: claim_messages(deps, address)?,
+    };
+
+    Ok(info)
+}
+
+
+
+
+pub fn contract_config(deps: Deps) -> StdResult<Config> {
+    let config = config_read(deps.storage).load().unwrap();
+    Ok(config)
+}
+
+
+
 
 pub fn not_implemented() -> StdResult<RewardResponse> {
     Err(cosmwasm_std::StdError::GenericErr { msg: "Not implemented".to_string() })

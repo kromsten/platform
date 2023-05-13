@@ -9,7 +9,8 @@ pub use crate::msg::{
     Attribute, AttributeValue, QueryMsg,
     ValueQuerier, QueryBuilder, RequestBuilder,
     RewardResponse, RewardsQueryResponse,
-    MessageBuilder
+    MessageBuilder, StrategyInfoResponse, 
+    StrategyFullInfoResponse
 };
 
 pub use attributes::{

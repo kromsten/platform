@@ -35,6 +35,7 @@ pub fn invest_msg() -> InvestmentAction {
             delegator_attribute(),
             coin_amount_attribute(),
         ],
+        description: Some("Native message for delegation SCRT tokens".to_string()),
         ..default_msg()
     }
 }
@@ -51,7 +52,7 @@ pub fn withdraw_msg(
             delegator_attribute(),
             coin_amount_attribute()
         ],
-        // now  + 21 days
+        description: Some("Native message for undelegation SCRT tokens that start 21 days unbonding process".to_string()),
         unbonding: Some(env.block.time.plus_seconds(1814400)),
         ..default_msg()
     }
@@ -67,6 +68,7 @@ pub fn claim_msg(
             validator_attribute(validator, true),
             delegator_attribute(),
         ],
+        description: Some("Claim distribution rewards from bounded SCRTs".to_string()),
         class: ActionClass::Claiming {},
         ..default_msg()
     }

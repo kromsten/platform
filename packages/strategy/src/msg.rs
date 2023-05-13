@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, Binary, QueryRequest, Empty, Uint128, Timestamp};
+use cosmwasm_std::{Addr, Binary, QueryRequest, Empty, Uint128, Timestamp, Decimal};
 use schemars::JsonSchema;
 use secret_toolkit::utils::types::Token;
 use serde::{Deserialize, Serialize};
@@ -16,7 +16,7 @@ pub enum QueryMsg {
     AprQuery {},
     RewardsQuery {},
     
-    AllRewards { },
+    AllRewards {},
     Rewards { token: Token },
     Apr {},
 
@@ -30,6 +30,12 @@ pub enum QueryMsg {
     WithPermit {
         query: QueryRequest<Empty>,
     },
+
+    StrategyInfo {},
+    StrategyFullInfo {
+        address: Option<Addr>
+    },
+
 
 
     TestQuery { 
@@ -175,4 +181,38 @@ pub struct RewardsQueryResponse {
     pub path: String,
     pub request: Option<QueryRequest<Empty>>,
     pub request_builder: Option<RequestBuilder>
+}
+
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
+pub struct StrategyInfoResponse {
+    pub description: String,
+
+    pub invest_tokens: Vec<Token>,
+    pub reward_tokens: Vec<Token>,
+
+    pub apr: Decimal,
+
+    pub invest_params: InvestParamsResult,
+    pub invest_msgs: Vec<InvestmentAction>
+}
+
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
+pub struct StrategyFullInfoResponse {
+    pub description: String,
+
+    pub invest_tokens: Vec<Token>,
+    pub reward_tokens: Vec<Token>,
+
+    pub apr: Decimal,
+    
+    pub invest_params: InvestParamsResult,
+    pub withdraw_params: InvestParamsResult,
+    pub claim_params: InvestParamsResult,
+
+    pub invest_msgs: Vec<InvestmentAction>,
+    pub withdraw_msgs: Vec<InvestmentAction>,
+    pub claim_msgs: Vec<InvestmentAction>
+    
 }

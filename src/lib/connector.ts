@@ -1,13 +1,14 @@
 import type { WalletConnector } from "../interfaces/functions";
 import { WalletType } from "../interfaces/enums";
 import { PUBLIC_SCRT_CHAIN_ID } from "$env/static/public";
-import { networksState } from "./state";
+import { networksState, walletName } from "./state";
 import { initSecretClientSignable } from "./client";
 import { supportedNetworks } from "../config";
 import { APP_PREFIX, initTokens } from "$lib";
-import type { LocalStorageState, StorageNetworks } from "$interfaces/state";
-import { env } from "$env/dynamic/public";
+import type { LocalStorageState } from "$interfaces/state";
 import { browser } from "$app/environment";
+import { secretDevInfo } from "./misc";
+import { getSubscribedValue } from "./utils";
 
 
 
@@ -22,6 +23,15 @@ export const connectWallet : WalletConnector = async (chainId: string | string[]
     wallet ??= await detectWallet()
     let connected = false;
     if (wallet === WalletType.Keplr) { connected =  await connectKeplr(chainId); }
+
+    if (!(await getSubscribedValue(walletName))) {
+      const keyInfo = await window.keplr?.getKey(Array.isArray(chainId) ? chainId[0] : chainId);
+
+      if (keyInfo?.name) {
+        walletName.set(keyInfo.name)
+      }
+    }
+
     return connected;
 }
 
@@ -68,7 +78,13 @@ export const connectChain = async (chainId : string) => {
 
 
 export const connectSecret = async () => {
-  return await connectChain(PUBLIC_SCRT_CHAIN_ID).then(initTokens)
+
+  if (PUBLIC_SCRT_CHAIN_ID === 'secretdev-1') {
+    await window.keplr?.experimentalSuggestChain(secretDevInfo)
+  }
+
+  await connectChain(PUBLIC_SCRT_CHAIN_ID).then(initTokens)
+
 } 
 
 
@@ -78,6 +94,8 @@ export const connectSecret = async () => {
 
 
 export const disconnectWallet = async (chainId : string) => {}
+
+
 
 
 

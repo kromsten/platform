@@ -1,4 +1,4 @@
-import nonTypedconfig from "../assets/config.json";
+import nonTypedconfig from "$contractConfig";
 import type { Config } from "./interfaces";
 
 export const config : Config = nonTypedconfig as Config

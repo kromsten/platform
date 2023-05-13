@@ -2,6 +2,8 @@ import { SecretNetworkClient } from "secretjs";
 import { connectWallet } from "./connector";
 
 import type { Window as KeplrWindow } from "@keplr-wallet/types";
+import { networksState } from "./state";
+import { PUBLIC_SCRT_CHAIN_ID } from "$env/static/public";
 
 
 declare global {
@@ -10,6 +12,14 @@ declare global {
 
 
 export let secretClient : SecretNetworkClient | undefined = undefined;
+
+
+networksState.subscribe(networks => {
+    if (PUBLIC_SCRT_CHAIN_ID in networks) {
+        secretClient = networks[PUBLIC_SCRT_CHAIN_ID].client;
+    }
+})
+
 
 
 export const initSecretClient = (chainId: string, url: string) => {
@@ -39,4 +49,35 @@ export const initSecretClientSignable = async (chainId: string, url: string) => 
         
         return client;
     }
+}
+
+
+
+export const queryContract = async (
+    client : SecretNetworkClient, 
+    query: any,
+    contract_address : string,
+    code_hash?: string,
+) : Promise<any> => {
+    return await client.query.compute.queryContract({
+        contract_address,
+        code_hash,
+        query
+    })
+}
+
+export const executeContract = async (
+    client : SecretNetworkClient, 
+    msg: any,
+    contract_address : string,
+    code_hash?: string,
+    sent_funds?: any[],
+) => {
+    return await client.tx.compute.executeContract({
+        contract_address,
+        sender: client.address,
+        code_hash,
+        msg,
+        sent_funds,
+    })
 }

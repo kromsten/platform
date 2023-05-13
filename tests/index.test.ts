@@ -8,7 +8,7 @@ import type { Account, ContractConfig} from "./interfaces";
 
 import config from "./config";
 
-const ASSET_PATH = "assets";
+const ASSET_PATH = "src/assets";
 const WASM_PATH = `${ASSET_PATH}/wasm`;
 
 

@@ -18,6 +18,7 @@ const config = {
 			$lib: './src/lib',
 			$routes: './src/routes',
 			$interfaces: './src/interfaces',
+			$contractConfig: './src/assets/config.json'
 		}
 	}
 };
