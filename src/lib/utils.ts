@@ -35,3 +35,8 @@ export const toHumanBalance = (balance: string, decimals: number) => {
 export const getSubscribedValue = async (store : Writable<any> ) : Promise<any> => {
     return new Promise((resolve, _) => resolve(store.subscribe(value => resolve(value))))
 }
+
+
+export const renderCosmosType = (type : string) => {
+    return type.split("v1beta1.")[1];
+}

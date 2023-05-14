@@ -29,8 +29,6 @@
 	<svelte:fragment slot="header">
 		<!-- App Bar -->
 		<AppBar background="">
-
-			
 			
 			<svelte:fragment slot="lead">
 				<strong class="text-xl uppercase"></strong>
@@ -38,17 +36,11 @@
 
 			
 			<svelte:fragment slot="trail">
-
 				<Account />
-
 			</svelte:fragment>
-
 		</AppBar>
-
 	</svelte:fragment>
 
-
-
-	<!-- Page Route Content -->
 	<slot />
+
 </AppShell>

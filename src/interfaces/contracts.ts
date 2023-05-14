@@ -13,4 +13,5 @@ export type RouterStrategy = {
     contract: Contract;
     inputs: Token[];
     outputs: Token[];
+    demo?: boolean;
 }

@@ -4,6 +4,10 @@
     import {selectedToken} from "$lib/state"
 	import Token from "./token.svelte";
 
+    import { crossfade } from "svelte/transition";
+    import { quintOut } from 'svelte/easing';
+
+
     const tokens  = Object.keys(supportedTokens)
 
     const onSelect = (e : any) => {
@@ -18,13 +22,45 @@
     };
 
 
+
+    const [send, receive] = crossfade({
+		duration: d => Math.sqrt(d * 200),
+
+		fallback(node, params) {
+			const style = getComputedStyle(node);
+			const transform = style.transform === 'none' ? '' : style.transform;
+
+			return {
+				duration: 600,
+				easing: quintOut,
+				css: t => `
+					transform: ${transform} scale(${t});
+					opacity: ${t}
+				`
+			};
+		}
+	});
+
+    let selected : string | undefined = undefined;
+    
+    $: if ($selectedToken) setTimeout(() => selected = $selectedToken, 1000)
+
 </script>
 
 
 <article class="mx-auto flex h-full items-center">
-    <button class="btn variant-filled w-48" use:popup={popupCombobox}>
-        <span class="capitalize">{$selectedToken ?? 'Select Token'}</span>
+    
+
+
+    <button 
+        in:receive="{{key: $selectedToken}}"
+        out:send="{{key: $selectedToken}}"
+        class="btn variant-filled w-48" 
+        use:popup={popupCombobox}
+    >
+            <span class="capitalize">{selected ?? 'Select Token'}</span>
     </button>
+
     
     
     <div class="card w-48 shadow-xl py-2" data-popup="tokens">

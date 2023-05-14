@@ -12,6 +12,7 @@ import { currentStrategies, investmentMessages, networksState, selectedStrategy,
 import { getSubscribedValue, toHumanBalance } from "./utils";
 import { getStrategies, getStrategyMessages } from "./strategies";
 import type { RouterStrategy } from "$interfaces/contracts";
+import { mockStrategies, mockStrategyMessages } from "../config/demo";
 
 declare global {
     interface Window extends KeplrWindow {}
@@ -206,13 +207,24 @@ export const init = async () => {
         } else {
             tokenStrategies = await getStrategies(token);
         }
+
+        const mock = mockStrategies[token] ?? []; 
+        tokenStrategies = [...tokenStrategies, ...mock] 
+
         currentStrategies.set(tokenStrategies)
     })
 
     selectedStrategy.subscribe((strategy) => {
         if (!strategy) return;
-        getStrategyMessages(strategy.contract.address)
-        .then((messages) => investmentMessages.set(messages))
+
+        if (strategy.demo) {
+            investmentMessages.set(mockStrategyMessages[strategy.contract.address])
+
+        } else {
+            getStrategyMessages(strategy.contract.address)
+            .then((messages) => investmentMessages.set(messages))
+        }
+
     })
 
 
